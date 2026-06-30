@@ -9,6 +9,7 @@ import {
   SPECIAL_NONE,
   targetForLevel
 } from "./balance";
+import { pointerToBoardCell, type BoardInputMetrics } from "./input";
 import {
   anyMatch,
   applyGravity,
@@ -35,6 +36,7 @@ const HEIGHT = 820;
 const GEM_SIZE = 68;
 const GAP = 7;
 const BOARD_PAD = 18;
+const INPUT_FORGIVENESS = 12;
 const BOARD_PIXEL_SIZE = BOARD_SIZE * GEM_SIZE + (BOARD_SIZE - 1) * GAP;
 const BOARD_X = (WIDTH - BOARD_PIXEL_SIZE) / 2;
 const BOARD_Y = 112;
@@ -57,6 +59,7 @@ export class Match3Scene extends Phaser.Scene {
   private timer?: Phaser.Time.TimerEvent;
   private tier: SkinTier = skinTierForLevel(1);
   private boardFrame!: Phaser.GameObjects.Graphics;
+  private boardInputZone?: Phaser.GameObjects.Zone;
   private sparkleTimer?: Phaser.Time.TimerEvent;
   private bestScore = 0;
   private bestLevel = 1;
@@ -73,10 +76,13 @@ export class Match3Scene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor("#090a12");
     this.drawBackground();
     this.drawBoardFrame();
+    this.createBoardInputZone();
     this.resetLevel(1, false);
     window.addEventListener("gem-action", this.actionHandler);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       window.removeEventListener("gem-action", this.actionHandler);
+      this.input.off("pointermove", this.onPointerMove, this);
+      this.input.off("pointerup", this.onBoardPointerUp, this);
       this.clearTimer();
       this.sparkleTimer?.remove(false);
     });
@@ -183,6 +189,18 @@ export class Match3Scene extends Phaser.Scene {
     }
   }
 
+  private createBoardInputZone() {
+    const size = BOARD_PIXEL_SIZE + BOARD_PAD * 2;
+    this.boardInputZone = this.add
+      .zone(BOARD_X + BOARD_PIXEL_SIZE / 2, BOARD_Y + BOARD_PIXEL_SIZE / 2, size, size)
+      .setOrigin(0.5)
+      .setDepth(70)
+      .setInteractive();
+    this.boardInputZone.on("pointerdown", (pointer: Phaser.Input.Pointer) => this.onBoardPointerDown(pointer));
+    this.input.on("pointermove", this.onPointerMove, this);
+    this.input.on("pointerup", this.onBoardPointerUp, this);
+  }
+
   private renderBoard() {
     this.gems.forEach((gem) => gem.destroy());
     this.gems.clear();
@@ -211,13 +229,6 @@ export class Match3Scene extends Phaser.Scene {
     container.add([halo, gem]);
     this.addSpecialBadge(container, this.specials[cell.row][cell.col]);
 
-    container.setInteractive(
-      new Phaser.Geom.Rectangle(-GEM_SIZE / 2, -GEM_SIZE / 2, GEM_SIZE, GEM_SIZE),
-      Phaser.Geom.Rectangle.Contains
-    );
-    container.on("pointerdown", (pointer: Phaser.Input.Pointer) => this.onPointerDown(cell, pointer));
-    container.on("pointermove", (pointer: Phaser.Input.Pointer) => this.onPointerMove(pointer));
-    container.on("pointerup", (pointer: Phaser.Input.Pointer) => this.onPointerUp(cell));
     this.gems.set(cellKey(cell), container);
   }
 
@@ -238,8 +249,9 @@ export class Match3Scene extends Phaser.Scene {
     container.add([badge, label]);
   }
 
-  private onPointerDown(cell: Cell, pointer: Phaser.Input.Pointer) {
-    if (this.state === "playing") {
+  private onBoardPointerDown(pointer: Phaser.Input.Pointer) {
+    const cell = this.pointerToCell(pointer);
+    if (this.state === "playing" && cell) {
       this.dragStart = { cell, x: pointer.worldX, y: pointer.worldY, consumed: false };
     }
   }
@@ -267,11 +279,12 @@ export class Match3Scene extends Phaser.Scene {
     }
   }
 
-  private onPointerUp(cell: Cell) {
+  private onBoardPointerUp(pointer: Phaser.Input.Pointer) {
     if (!this.dragStart || this.dragStart.consumed) {
       this.dragStart = undefined;
       return;
     }
+    const cell = this.pointerToCell(pointer) ?? this.dragStart.cell;
     this.dragStart = undefined;
     this.handleTap(cell);
   }
@@ -759,6 +772,20 @@ export class Match3Scene extends Phaser.Scene {
     return {
       x: BOARD_X + cell.col * (GEM_SIZE + GAP) + GEM_SIZE / 2,
       y: BOARD_Y + cell.row * (GEM_SIZE + GAP) + GEM_SIZE / 2
+    };
+  }
+
+  private pointerToCell(pointer: Phaser.Input.Pointer) {
+    return pointerToBoardCell(pointer.worldX, pointer.worldY, this.boardInputMetrics(), INPUT_FORGIVENESS);
+  }
+
+  private boardInputMetrics(): BoardInputMetrics {
+    return {
+      boardX: BOARD_X,
+      boardY: BOARD_Y,
+      gemSize: GEM_SIZE,
+      gap: GAP,
+      boardSize: BOARD_SIZE
     };
   }
 
