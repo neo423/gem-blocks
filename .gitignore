@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.pnpm-store/
+*.log
+.superpowers/
+UnityProject/Library/
+UnityProject/
+UnityProject/Temp/
+UnityProject/Obj/
+UnityProject/Logs/
+UnityProject/UserSettings/
+UnityProject/Builds/
+GAME_DESIGN.md
+UNITY.md
