@@ -9,6 +9,8 @@ import {
   SPECIAL_NONE,
   targetForLevel
 } from "./balance";
+import { GemAudio } from "./audio";
+import { removalFxPlan, type RemovalFxPlan } from "./fx";
 import { pointerToBoardCell, type BoardInputMetrics } from "./input";
 import {
   anyMatch,
@@ -29,7 +31,8 @@ import { createGemTextures, gemDisplayName, gemTextureKey, GEM_TEXTURE_SIZE } fr
 import type { Board, Cell, GemValue, SkinTier, SpecialBoard } from "./types";
 
 type PlayState = "menu" | "playing" | "busy" | "paused" | "over";
-type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "shuffle";
+type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "shuffle" | "sound";
+type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 720;
 const HEIGHT = 820;
@@ -63,6 +66,7 @@ export class Match3Scene extends Phaser.Scene {
   private sparkleTimer?: Phaser.Time.TimerEvent;
   private bestScore = 0;
   private bestLevel = 1;
+  private audio = new GemAudio();
   private actionHandler = (event: Event) => {
     this.handleUiAction((event as CustomEvent<UiAction>).detail);
   };
@@ -85,18 +89,27 @@ export class Match3Scene extends Phaser.Scene {
       this.input.off("pointerup", this.onBoardPointerUp, this);
       this.clearTimer();
       this.sparkleTimer?.remove(false);
+      this.audio.destroy();
     });
     this.showMenu();
   }
 
   private handleUiAction(action: UiAction) {
+    if (action === "sound") {
+      void this.toggleAudio();
+      return;
+    }
     if (action === "start" || action === "restart") {
+      void this.audio.unlock();
       this.totalScore = 0;
       this.resetLevel(1, true);
+      this.audio.playLevelStart();
       return;
     }
     if (action === "next") {
+      void this.audio.unlock();
       this.resetLevel(this.level + 1, true);
+      this.audio.playLevelStart();
       return;
     }
     if (action === "pause") {
@@ -114,6 +127,14 @@ export class Match3Scene extends Phaser.Scene {
     if (action === "shuffle") {
       this.shufflePlayerBoard();
     }
+  }
+
+  private async toggleAudio() {
+    await this.audio.toggle();
+    if (this.audio.enabled && this.state === "playing") {
+      this.audio.startMusic();
+    }
+    this.updateUi();
   }
 
   private resetLevel(level: number, startPlaying: boolean) {
@@ -136,6 +157,7 @@ export class Match3Scene extends Phaser.Scene {
       this.state = "playing";
       this.startTimer();
       this.startSparkles();
+      this.audio.startMusic();
       this.hideOverlay();
       return;
     }
@@ -201,7 +223,7 @@ export class Match3Scene extends Phaser.Scene {
     this.input.on("pointerup", this.onBoardPointerUp, this);
   }
 
-  private renderBoard() {
+  private renderBoard(options: RenderBoardOptions = {}) {
     this.gems.forEach((gem) => gem.destroy());
     this.gems.clear();
 
@@ -209,13 +231,13 @@ export class Match3Scene extends Phaser.Scene {
       for (let col = 0; col < BOARD_SIZE; col += 1) {
         const value = this.board[row][col];
         if (value !== EMPTY_GEM) {
-          this.createGem({ row, col }, value);
+          this.createGem({ row, col }, value, options);
         }
       }
     }
   }
 
-  private createGem(cell: Cell, value: GemValue) {
+  private createGem(cell: Cell, value: GemValue, options: RenderBoardOptions = {}) {
     const p = this.cellToWorld(cell);
     const container = this.add.container(p.x, p.y);
     container.setSize(GEM_SIZE, GEM_SIZE);
@@ -228,6 +250,21 @@ export class Match3Scene extends Phaser.Scene {
     gem.setDisplaySize(GEM_TEXTURE_SIZE * 0.78, GEM_TEXTURE_SIZE * 0.78);
     container.add([halo, gem]);
     this.addSpecialBadge(container, this.specials[cell.row][cell.col]);
+
+    if (options.dropIn) {
+      container.y = p.y - (GEM_SIZE + GAP) * (1.1 + cell.row * 0.16);
+      container.alpha = 0;
+      container.setScale(0.82);
+      this.tweens.add({
+        targets: container,
+        y: p.y,
+        alpha: 1,
+        scale: 1,
+        duration: 270 + cell.row * 16,
+        delay: cell.col * 10,
+        ease: "Back.Out"
+      });
+    }
 
     this.gems.set(cellKey(cell), container);
   }
@@ -252,6 +289,7 @@ export class Match3Scene extends Phaser.Scene {
   private onBoardPointerDown(pointer: Phaser.Input.Pointer) {
     const cell = this.pointerToCell(pointer);
     if (this.state === "playing" && cell) {
+      void this.audio.unlock();
       this.dragStart = { cell, x: pointer.worldX, y: pointer.worldY, consumed: false };
     }
   }
@@ -319,6 +357,7 @@ export class Match3Scene extends Phaser.Scene {
   private selectCell(cell: Cell) {
     this.selected = cell;
     this.clearSelection();
+    this.audio.playSelect();
     const gem = this.gems.get(cellKey(cell));
     if (!gem) {
       return;
@@ -348,6 +387,7 @@ export class Match3Scene extends Phaser.Scene {
     this.state = "busy";
     this.pendingSwap = [a, b];
     this.clearHint();
+    this.audio.playSwap();
 
     this.animateSwap(a, b, () => {
       swapCells(this.board, a, b);
@@ -365,6 +405,7 @@ export class Match3Scene extends Phaser.Scene {
           this.swapGemContainers(a, b);
           this.pendingSwap = [];
           this.state = "playing";
+          this.audio.playInvalid();
         });
       });
     });
@@ -408,7 +449,8 @@ export class Match3Scene extends Phaser.Scene {
       this.pendingSwap = [];
       if (!findHint(this.board)) {
         shuffleBoard(this.board, this.specials);
-        this.renderBoard();
+        this.audio.playShuffle();
+        this.renderBoard({ dropIn: true });
       }
       if (this.levelScore >= this.target) {
         this.completeLevel();
@@ -421,6 +463,7 @@ export class Match3Scene extends Phaser.Scene {
 
     const plan = planMatches(runs, combo === 1 ? this.pendingSwap : []);
     const removeSet = expandRemoval(plan.matched, plan.creationKeys, this.specials);
+    const fxPlan = removalFxPlan(removeSet.size, combo);
     const gained = scoreForRemoval(removeSet.size, combo);
     this.levelScore += gained;
     this.totalScore += gained;
@@ -432,47 +475,65 @@ export class Match3Scene extends Phaser.Scene {
       this.pulseCell(creation, creation.special === SPECIAL_BOMB ? 0xffd166 : 0x8ff7ff);
     });
 
-    this.animateRemoval(removeSet, () => {
+    this.animateRemoval(removeSet, fxPlan, combo, () => {
       removeSet.forEach((key) => {
         const cell = { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
         this.board[cell.row][cell.col] = EMPTY_GEM;
         this.specials[cell.row][cell.col] = SPECIAL_NONE;
       });
       applyGravity(this.board, this.specials, () => Math.floor(Math.random() * 6) as GemValue);
-      this.renderBoard();
-      this.time.delayedCall(170, () => this.resolveBoard(combo + 1));
+      this.renderBoard({ dropIn: true });
+      this.time.delayedCall(150, () => this.resolveBoard(combo + 1));
     });
   }
 
-  private animateRemoval(removeSet: Set<number>, onComplete: () => void) {
+  private animateRemoval(removeSet: Set<number>, fxPlan: RemovalFxPlan, combo: number, onComplete: () => void) {
     if (removeSet.size === 0) {
       onComplete();
       return;
     }
+    this.audio.playClear(fxPlan, combo);
+    this.cameras.main.shake(fxPlan.cameraShakeDurationMs, fxPlan.cameraShakeIntensity);
+    this.clusterBurst(removeSet, fxPlan);
     let remaining = removeSet.size;
+    const finishOne = () => {
+      remaining -= 1;
+      if (remaining === 0) {
+        onComplete();
+      }
+    };
     removeSet.forEach((key) => {
       const gem = this.gems.get(key);
       const cell = { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
       if (!gem) {
-        remaining -= 1;
+        finishOne();
         return;
       }
-      this.burstAt(cell, this.board[cell.row][cell.col]);
-      this.tweens.add({
-        targets: gem,
-        scale: 1.34,
-        alpha: 0,
-        angle: Phaser.Math.Between(-25, 25),
-        duration: 210,
-        ease: "Back.In",
-        onComplete: () => {
-          gem.destroy();
-          this.gems.delete(key);
-          remaining -= 1;
-          if (remaining === 0) {
-            onComplete();
+      const delay = (cell.row + cell.col) * fxPlan.staggerMs;
+      this.time.delayedCall(delay, () => {
+        this.burstAt(cell, this.board[cell.row][cell.col], fxPlan);
+        this.tweens.add({
+          targets: gem,
+          scale: 1.28,
+          duration: 75,
+          ease: "Back.Out",
+          onComplete: () => {
+            this.tweens.add({
+              targets: gem,
+              y: gem.y - 22,
+              scale: 0.12,
+              alpha: 0,
+              angle: Phaser.Math.Between(-90, 90),
+              duration: fxPlan.durationMs,
+              ease: "Cubic.easeIn",
+              onComplete: () => {
+                gem.destroy();
+                this.gems.delete(key);
+                finishOne();
+              }
+            });
           }
-        }
+        });
       });
     });
   }
@@ -484,19 +545,20 @@ export class Match3Scene extends Phaser.Scene {
     this.state = "busy";
     this.clearHint();
     const removeSet = expandRemoval(new Set([cellKey(cell)]), new Set(), this.specials);
+    const fxPlan = removalFxPlan(removeSet.size, 2);
     const gained = scoreForRemoval(removeSet.size, 1);
     this.levelScore += gained;
     this.totalScore += gained;
     this.updateBest(false);
     this.updateUi({ combo: 1, gained });
-    this.animateRemoval(removeSet, () => {
+    this.animateRemoval(removeSet, fxPlan, 2, () => {
       removeSet.forEach((key) => {
         const target = { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
         this.board[target.row][target.col] = EMPTY_GEM;
         this.specials[target.row][target.col] = SPECIAL_NONE;
       });
       applyGravity(this.board, this.specials, () => Math.floor(Math.random() * 6) as GemValue);
-      this.renderBoard();
+      this.renderBoard({ dropIn: true });
       this.time.delayedCall(170, () => this.resolveBoard(2));
     });
   }
@@ -505,6 +567,7 @@ export class Match3Scene extends Phaser.Scene {
     if (this.state !== "playing") {
       return;
     }
+    this.audio.playHint();
     this.clearHint();
     const hint = findHint(this.board);
     if (!hint) {
@@ -544,7 +607,8 @@ export class Match3Scene extends Phaser.Scene {
     }
     this.shufflesLeft -= 1;
     shuffleBoard(this.board, this.specials);
-    this.renderBoard();
+    this.audio.playShuffle();
+    this.renderBoard({ dropIn: true });
     this.updateUi();
   }
 
@@ -554,6 +618,8 @@ export class Match3Scene extends Phaser.Scene {
     }
     this.state = "paused";
     this.clearTimer();
+    this.audio.stopMusic();
+    this.audio.playSelect();
     this.dispatchOverlay({
       mode: "pause",
       title: "已暫停",
@@ -570,12 +636,17 @@ export class Match3Scene extends Phaser.Scene {
     this.state = "playing";
     this.hideOverlay();
     this.startTimer();
+    void this.audio.unlock();
+    this.audio.startMusic();
+    this.audio.playLevelStart();
     this.updateUi();
   }
 
   private completeLevel() {
     this.state = "over";
     this.clearTimer();
+    this.audio.stopMusic();
+    this.audio.playLevelClear();
     this.updateBest(true);
     const nextTier = skinTierForLevel(this.level + 1);
     this.dispatchOverlay({
@@ -594,6 +665,8 @@ export class Match3Scene extends Phaser.Scene {
   private gameOver() {
     this.state = "over";
     this.clearTimer();
+    this.audio.stopMusic();
+    this.audio.playGameOver();
     this.updateBest(true);
     this.dispatchOverlay({
       mode: "gameover",
@@ -671,32 +744,125 @@ export class Match3Scene extends Phaser.Scene {
     });
   }
 
-  private burstAt(cell: Cell, value: GemValue) {
+  private burstAt(cell: Cell, value: GemValue, fxPlan: RemovalFxPlan) {
     const p = this.cellToWorld(cell);
     const color = value >= 0 ? this.colorForGem(value) : 0xffffff;
-    for (let i = 0; i < 8; i += 1) {
-      const shard = this.add.triangle(p.x, p.y, 0, -5, 4, 5, -4, 5, color, 0.9);
+    const core = this.add.star(p.x, p.y, 6, 7, 28, 0xffffff, 0.88);
+    core.setDepth(88);
+    this.tweens.add({
+      targets: core,
+      scale: 1.65,
+      alpha: 0,
+      angle: 140,
+      duration: fxPlan.durationMs * 0.8,
+      ease: "Cubic.easeOut",
+      onComplete: () => core.destroy()
+    });
+
+    const highlight = this.add.circle(p.x, p.y, 12, 0xffffff, 0.62);
+    highlight.setDepth(86);
+    this.tweens.add({
+      targets: highlight,
+      radius: fxPlan.flashRadius,
+      alpha: 0,
+      duration: fxPlan.durationMs * 0.65,
+      ease: "Cubic.easeOut",
+      onComplete: () => highlight.destroy()
+    });
+
+    const ring = this.add.circle(p.x, p.y, 8);
+    ring.setStrokeStyle(5, 0xfff3b0, 0.86);
+    ring.setDepth(86);
+    this.tweens.add({
+      targets: ring,
+      radius: fxPlan.ringRadius,
+      alpha: 0,
+      duration: fxPlan.durationMs,
+      ease: "Expo.easeOut",
+      onComplete: () => ring.destroy()
+    });
+
+    for (let i = 0; i < fxPlan.shardsPerGem; i += 1) {
+      const angle = (Math.PI * 2 * i) / fxPlan.shardsPerGem + Phaser.Math.FloatBetween(-0.18, 0.18);
+      const distance = Phaser.Math.Between(28, 58 + Math.floor(fxPlan.ringRadius * 0.45));
+      const shard = this.add.triangle(p.x, p.y, 0, -7, 5, 6, -5, 6, color, 0.92);
       shard.setDepth(85);
+      shard.setScale(Phaser.Math.FloatBetween(0.72, 1.18));
       this.tweens.add({
         targets: shard,
-        x: p.x + Phaser.Math.Between(-38, 38),
-        y: p.y + Phaser.Math.Between(-38, 38),
+        x: p.x + Math.cos(angle) * distance,
+        y: p.y + Math.sin(angle) * distance,
         alpha: 0,
-        angle: Phaser.Math.Between(-180, 180),
-        duration: 430,
+        scale: 0.18,
+        angle: Phaser.Math.Between(-260, 260),
+        duration: fxPlan.durationMs + Phaser.Math.Between(-40, 110),
         ease: "Cubic.easeOut",
         onComplete: () => shard.destroy()
       });
     }
-    const flash = this.add.circle(p.x, p.y, 8, 0xffffff, 0.65);
-    flash.setDepth(84);
+
+    for (let i = 0; i < fxPlan.dustPerGem; i += 1) {
+      const dust = this.add.star(
+        p.x + Phaser.Math.Between(-12, 12),
+        p.y + Phaser.Math.Between(-12, 12),
+        4,
+        2,
+        Phaser.Math.Between(5, 9),
+        0xffffff,
+        0.78
+      );
+      dust.setDepth(87);
+      this.tweens.add({
+        targets: dust,
+        x: dust.x + Phaser.Math.Between(-32, 32),
+        y: dust.y - Phaser.Math.Between(22, 54),
+        alpha: 0,
+        scale: 1.8,
+        angle: 120,
+        duration: fxPlan.durationMs + Phaser.Math.Between(80, 180),
+        ease: "Sine.easeOut",
+        onComplete: () => dust.destroy()
+      });
+    }
+  }
+
+  private clusterBurst(removeSet: Set<number>, fxPlan: RemovalFxPlan) {
+    if (removeSet.size === 0) {
+      return;
+    }
+    let totalX = 0;
+    let totalY = 0;
+    removeSet.forEach((key) => {
+      const p = this.cellToWorld({ row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE });
+      totalX += p.x;
+      totalY += p.y;
+    });
+
+    const centerX = totalX / removeSet.size;
+    const centerY = totalY / removeSet.size;
+    const wave = this.add.circle(centerX, centerY, 18);
+    wave.setStrokeStyle(7, 0x8ff7ff, 0.62);
+    wave.setDepth(83);
     this.tweens.add({
-      targets: flash,
-      radius: 42,
+      targets: wave,
+      radius: fxPlan.ringRadius * 1.35,
       alpha: 0,
-      duration: 260,
-      ease: "Cubic.easeOut",
-      onComplete: () => flash.destroy()
+      duration: fxPlan.durationMs + 220,
+      ease: "Expo.easeOut",
+      onComplete: () => wave.destroy()
+    });
+
+    const sweep = this.add.rectangle(centerX, centerY, fxPlan.ringRadius * 2.4, 9, 0xffffff, 0.22);
+    sweep.setDepth(84);
+    sweep.setAngle(Phaser.Math.Between(-28, 28));
+    this.tweens.add({
+      targets: sweep,
+      scaleX: 1.55,
+      scaleY: 0.1,
+      alpha: 0,
+      duration: fxPlan.durationMs + 120,
+      ease: "Sine.easeOut",
+      onComplete: () => sweep.destroy()
     });
   }
 
@@ -728,6 +894,7 @@ export class Match3Scene extends Phaser.Scene {
           tierName: this.tier.name,
           bestScore: this.bestScore,
           bestLevel: this.bestLevel,
+          audioEnabled: this.audio.enabled,
           state: this.state,
           progress: Math.min(1, this.levelScore / this.target),
           nextGem: gemDisplayName(this.tier.key, 0),

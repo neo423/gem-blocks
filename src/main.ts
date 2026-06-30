@@ -13,6 +13,7 @@ type UiState = {
   bestScore: number;
   bestLevel: number;
   progress: number;
+  audioEnabled: boolean;
   state: string;
   combo?: number;
   gained?: number;
@@ -38,6 +39,7 @@ const ui = {
   hint: document.querySelector<HTMLButtonElement>("#hint-btn")!,
   shuffle: document.querySelector<HTMLButtonElement>("#shuffle-btn")!,
   pause: document.querySelector<HTMLButtonElement>("#pause-btn")!,
+  sound: document.querySelector<HTMLButtonElement>("#sound-btn")!,
   overlay: document.querySelector<HTMLDivElement>("#overlay")!,
   overlayTitle: document.querySelector<HTMLHeadingElement>("#overlay-title")!,
   overlayText: document.querySelector<HTMLParagraphElement>("#overlay-text")!,
@@ -64,6 +66,7 @@ window.addEventListener("gem-overlay-hide", () => {
 ui.hint.addEventListener("click", () => dispatchAction("hint"));
 ui.shuffle.addEventListener("click", () => dispatchAction("shuffle"));
 ui.pause.addEventListener("click", () => dispatchAction("pause"));
+ui.sound.addEventListener("click", () => dispatchAction("sound"));
 ui.overlayButton.addEventListener("click", () => {
   if (overlayMode === "menu") {
     dispatchAction("start");
@@ -97,6 +100,9 @@ function updateUi(state: UiState) {
   ui.shuffle.disabled = state.shufflesLeft <= 0 || state.state !== "playing";
   ui.hint.disabled = state.state !== "playing";
   ui.pause.disabled = state.state !== "playing";
+  ui.sound.textContent = state.audioEnabled ? "音樂 開" : "音樂 關";
+  ui.sound.classList.toggle("off", !state.audioEnabled);
+  ui.sound.setAttribute("aria-pressed", String(state.audioEnabled));
 
   if (state.gained) {
     ui.combo.textContent = state.combo && state.combo > 1 ? `連鎖 x${state.combo}  +${state.gained}` : `+${state.gained}`;

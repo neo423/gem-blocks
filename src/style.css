@@ -159,8 +159,13 @@ button:disabled {
 
 #controls {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+}
+
+#sound-btn.off {
+  color: rgba(245, 241, 223, 0.62);
+  background: rgba(18, 21, 38, 0.58);
 }
 
 #combo-toast {
