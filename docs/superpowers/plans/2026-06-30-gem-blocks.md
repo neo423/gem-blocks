@@ -114,6 +114,6 @@ Expected: TypeScript and Vite build pass.
 
 Run local dev server and verify with browser automation or screenshots that the board is nonblank, 64 gems render, controls exist, and at least one swap resolves.
 
-- [ ] **Step 4: GitHub publishing**
+- [x] **Step 4: GitHub publishing**
 
 Fix or initialize git metadata, confirm the GitHub remote, install/authenticate `gh` or use another approved GitHub path, then commit and push only intended game files.
