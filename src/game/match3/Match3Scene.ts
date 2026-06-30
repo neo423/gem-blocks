@@ -1,7 +1,8 @@
 import Phaser from "phaser";
 import {
   BASE_LEVEL_TIME_SECONDS,
-  BOARD_SIZE,
+  BOARD_COLS,
+  BOARD_ROWS,
   EMPTY_GEM,
   scoreForRemoval,
   SHUFFLES_PER_LEVEL,
@@ -14,8 +15,9 @@ import { removalFxPlan, type RemovalFxPlan } from "./fx";
 import { pointerToBoardCell, type BoardInputMetrics } from "./input";
 import {
   anyMatch,
-  applyGravity,
+  applyGravityWithPlan,
   areAdjacent,
+  cellFromKey,
   cellKey,
   createEmptySpecialBoard,
   expandRemoval,
@@ -25,7 +27,8 @@ import {
   planMatches,
   shuffleBoard,
   skinTierForLevel,
-  swapCells
+  swapCells,
+  type GravityPlan
 } from "./logic";
 import { createGemTextures, gemDisplayName, gemTextureKey, GEM_TEXTURE_SIZE } from "./gemArt";
 import type { Board, Cell, GemValue, SkinTier, SpecialBoard } from "./types";
@@ -36,13 +39,14 @@ type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 720;
 const HEIGHT = 820;
-const GEM_SIZE = 68;
-const GAP = 7;
-const BOARD_PAD = 18;
+const GEM_SIZE = 56;
+const GAP = 6;
+const BOARD_PAD = 16;
 const INPUT_FORGIVENESS = 12;
-const BOARD_PIXEL_SIZE = BOARD_SIZE * GEM_SIZE + (BOARD_SIZE - 1) * GAP;
-const BOARD_X = (WIDTH - BOARD_PIXEL_SIZE) / 2;
-const BOARD_Y = 112;
+const BOARD_PIXEL_WIDTH = BOARD_COLS * GEM_SIZE + (BOARD_COLS - 1) * GAP;
+const BOARD_PIXEL_HEIGHT = BOARD_ROWS * GEM_SIZE + (BOARD_ROWS - 1) * GAP;
+const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
+const BOARD_Y = 92;
 const SAVE_KEY = "gem-blocks-save-v1";
 
 export class Match3Scene extends Phaser.Scene {
@@ -192,18 +196,19 @@ export class Match3Scene extends Phaser.Scene {
     this.boardFrame = this.add.graphics();
     const x = BOARD_X - BOARD_PAD;
     const y = BOARD_Y - BOARD_PAD;
-    const size = BOARD_PIXEL_SIZE + BOARD_PAD * 2;
+    const width = BOARD_PIXEL_WIDTH + BOARD_PAD * 2;
+    const height = BOARD_PIXEL_HEIGHT + BOARD_PAD * 2;
     this.boardFrame.fillStyle(0x020309, 0.72);
-    this.boardFrame.fillRoundedRect(x + 8, y + 10, size, size, 18);
+    this.boardFrame.fillRoundedRect(x + 8, y + 10, width, height, 18);
     this.boardFrame.fillStyle(0x121526, 0.96);
-    this.boardFrame.fillRoundedRect(x, y, size, size, 18);
+    this.boardFrame.fillRoundedRect(x, y, width, height, 18);
     this.boardFrame.lineStyle(4, 0xd8b56a, 0.74);
-    this.boardFrame.strokeRoundedRect(x, y, size, size, 18);
+    this.boardFrame.strokeRoundedRect(x, y, width, height, 18);
     this.boardFrame.lineStyle(1, 0x6df2d0, 0.24);
-    this.boardFrame.strokeRoundedRect(x + 9, y + 9, size - 18, size - 18, 12);
+    this.boardFrame.strokeRoundedRect(x + 9, y + 9, width - 18, height - 18, 12);
 
-    for (let row = 0; row < BOARD_SIZE; row += 1) {
-      for (let col = 0; col < BOARD_SIZE; col += 1) {
+    for (let row = 0; row < BOARD_ROWS; row += 1) {
+      for (let col = 0; col < BOARD_COLS; col += 1) {
         const p = this.cellToWorld({ row, col });
         this.boardFrame.fillStyle((row + col) % 2 === 0 ? 0x111827 : 0x0c111b, 0.92);
         this.boardFrame.fillRoundedRect(p.x - GEM_SIZE / 2, p.y - GEM_SIZE / 2, GEM_SIZE, GEM_SIZE, 8);
@@ -212,9 +217,10 @@ export class Match3Scene extends Phaser.Scene {
   }
 
   private createBoardInputZone() {
-    const size = BOARD_PIXEL_SIZE + BOARD_PAD * 2;
+    const width = BOARD_PIXEL_WIDTH + BOARD_PAD * 2;
+    const height = BOARD_PIXEL_HEIGHT + BOARD_PAD * 2;
     this.boardInputZone = this.add
-      .zone(BOARD_X + BOARD_PIXEL_SIZE / 2, BOARD_Y + BOARD_PIXEL_SIZE / 2, size, size)
+      .zone(BOARD_X + BOARD_PIXEL_WIDTH / 2, BOARD_Y + BOARD_PIXEL_HEIGHT / 2, width, height)
       .setOrigin(0.5)
       .setDepth(70)
       .setInteractive();
@@ -227,8 +233,8 @@ export class Match3Scene extends Phaser.Scene {
     this.gems.forEach((gem) => gem.destroy());
     this.gems.clear();
 
-    for (let row = 0; row < BOARD_SIZE; row += 1) {
-      for (let col = 0; col < BOARD_SIZE; col += 1) {
+    for (let row = 0; row < BOARD_ROWS; row += 1) {
+      for (let col = 0; col < BOARD_COLS; col += 1) {
         const value = this.board[row][col];
         if (value !== EMPTY_GEM) {
           this.createGem({ row, col }, value, options);
@@ -267,6 +273,7 @@ export class Match3Scene extends Phaser.Scene {
     }
 
     this.gems.set(cellKey(cell), container);
+    return container;
   }
 
   private addSpecialBadge(container: Phaser.GameObjects.Container, special: number) {
@@ -476,14 +483,7 @@ export class Match3Scene extends Phaser.Scene {
     });
 
     this.animateRemoval(removeSet, fxPlan, combo, () => {
-      removeSet.forEach((key) => {
-        const cell = { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
-        this.board[cell.row][cell.col] = EMPTY_GEM;
-        this.specials[cell.row][cell.col] = SPECIAL_NONE;
-      });
-      applyGravity(this.board, this.specials, () => Math.floor(Math.random() * 6) as GemValue);
-      this.renderBoard({ dropIn: true });
-      this.time.delayedCall(150, () => this.resolveBoard(combo + 1));
+      this.settleAfterRemoval(removeSet, combo + 1);
     });
   }
 
@@ -504,7 +504,7 @@ export class Match3Scene extends Phaser.Scene {
     };
     removeSet.forEach((key) => {
       const gem = this.gems.get(key);
-      const cell = { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
+      const cell = cellFromKey(key);
       if (!gem) {
         finishOne();
         return;
@@ -538,6 +538,80 @@ export class Match3Scene extends Phaser.Scene {
     });
   }
 
+  private settleAfterRemoval(removeSet: Set<number>, nextCombo: number) {
+    removeSet.forEach((key) => {
+      const cell = cellFromKey(key);
+      this.board[cell.row][cell.col] = EMPTY_GEM;
+      this.specials[cell.row][cell.col] = SPECIAL_NONE;
+    });
+
+    const gravityPlan = applyGravityWithPlan(this.board, this.specials, () => Math.floor(Math.random() * 6) as GemValue);
+    this.animateGravity(gravityPlan, () => {
+      this.time.delayedCall(80, () => this.resolveBoard(nextCombo));
+    });
+  }
+
+  private animateGravity(gravityPlan: GravityPlan, onComplete: () => void) {
+    const totalAnimations = gravityPlan.moves.length + gravityPlan.spawns.length;
+    if (totalAnimations === 0) {
+      onComplete();
+      return;
+    }
+
+    let remaining = totalAnimations;
+    const done = () => {
+      remaining -= 1;
+      if (remaining === 0) {
+        onComplete();
+      }
+    };
+
+    gravityPlan.moves.forEach((move) => {
+      const fromKey = cellKey(move.from);
+      const toKey = cellKey(move.to);
+      const gem = this.gems.get(fromKey);
+      if (!gem) {
+        done();
+        return;
+      }
+
+      const target = this.cellToWorld(move.to);
+      const distance = Math.max(1, move.to.row - move.from.row);
+      this.gems.delete(fromKey);
+      this.gems.set(toKey, gem);
+      gem.setData("row", move.to.row);
+      gem.setData("col", move.to.col);
+      gem.setDepth(20 + move.to.row);
+      this.tweens.add({
+        targets: gem,
+        x: target.x,
+        y: target.y,
+        duration: 145 + distance * 52,
+        ease: "Bounce.easeOut",
+        onComplete: done
+      });
+    });
+
+    gravityPlan.spawns.forEach((spawn, index) => {
+      const gem = this.createGem(spawn.cell, spawn.value);
+      const target = this.cellToWorld(spawn.cell);
+      const rowsAbove = spawn.cell.row + 1;
+      gem.y = BOARD_Y + GEM_SIZE / 2 - rowsAbove * (GEM_SIZE + GAP);
+      gem.alpha = 0;
+      gem.setScale(0.82);
+      this.tweens.add({
+        targets: gem,
+        y: target.y,
+        alpha: 1,
+        scale: 1,
+        duration: 240 + rowsAbove * 44,
+        delay: (index % BOARD_COLS) * 12,
+        ease: "Back.Out",
+        onComplete: done
+      });
+    });
+  }
+
   private detonateSpecial(cell: Cell) {
     if (this.state !== "playing" || this.specials[cell.row][cell.col] === SPECIAL_NONE) {
       return;
@@ -552,14 +626,7 @@ export class Match3Scene extends Phaser.Scene {
     this.updateBest(false);
     this.updateUi({ combo: 1, gained });
     this.animateRemoval(removeSet, fxPlan, 2, () => {
-      removeSet.forEach((key) => {
-        const target = { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
-        this.board[target.row][target.col] = EMPTY_GEM;
-        this.specials[target.row][target.col] = SPECIAL_NONE;
-      });
-      applyGravity(this.board, this.specials, () => Math.floor(Math.random() * 6) as GemValue);
-      this.renderBoard({ dropIn: true });
-      this.time.delayedCall(170, () => this.resolveBoard(2));
+      this.settleAfterRemoval(removeSet, 2);
     });
   }
 
@@ -833,7 +900,7 @@ export class Match3Scene extends Phaser.Scene {
     let totalX = 0;
     let totalY = 0;
     removeSet.forEach((key) => {
-      const p = this.cellToWorld({ row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE });
+      const p = this.cellToWorld(cellFromKey(key));
       totalX += p.x;
       totalY += p.y;
     });
@@ -952,12 +1019,13 @@ export class Match3Scene extends Phaser.Scene {
       boardY: BOARD_Y,
       gemSize: GEM_SIZE,
       gap: GAP,
-      boardSize: BOARD_SIZE
+      boardRows: BOARD_ROWS,
+      boardCols: BOARD_COLS
     };
   }
 
   private isValidCell(cell: Cell) {
-    return cell.row >= 0 && cell.row < BOARD_SIZE && cell.col >= 0 && cell.col < BOARD_SIZE;
+    return cell.row >= 0 && cell.row < BOARD_ROWS && cell.col >= 0 && cell.col < BOARD_COLS;
   }
 
   private colorForGem(value: GemValue) {

@@ -5,7 +5,8 @@ export type BoardInputMetrics = {
   boardY: number;
   gemSize: number;
   gap: number;
-  boardSize: number;
+  boardRows: number;
+  boardCols: number;
 };
 
 export function pointerToBoardCell(
@@ -21,7 +22,7 @@ export function pointerToBoardCell(
   const col = Math.round((localX - metrics.gemSize / 2) / step);
   const row = Math.round((localY - metrics.gemSize / 2) / step);
 
-  if (row < 0 || row >= metrics.boardSize || col < 0 || col >= metrics.boardSize) {
+  if (row < 0 || row >= metrics.boardRows || col < 0 || col >= metrics.boardCols) {
     return null;
   }
 

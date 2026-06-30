@@ -1,5 +1,6 @@
 import {
-  BOARD_SIZE,
+  BOARD_COLS,
+  BOARD_ROWS,
   EMPTY_GEM,
   GEM_COLORS,
   SKIN_TIERS,
@@ -11,12 +12,27 @@ import type { Board, Cell, GemValue, MatchPlan, MatchRun, SkinTier, SpecialBoard
 
 type RandomFn = () => number;
 
+export type GravityMove = {
+  from: Cell;
+  to: Cell;
+};
+
+export type GravitySpawn = {
+  cell: Cell;
+  value: GemValue;
+};
+
+export type GravityPlan = {
+  moves: GravityMove[];
+  spawns: GravitySpawn[];
+};
+
 export function cellKey(cell: Cell) {
-  return cell.row * BOARD_SIZE + cell.col;
+  return cell.row * BOARD_COLS + cell.col;
 }
 
 export function cellFromKey(key: number): Cell {
-  return { row: Math.floor(key / BOARD_SIZE), col: key % BOARD_SIZE };
+  return { row: Math.floor(key / BOARD_COLS), col: key % BOARD_COLS };
 }
 
 export function cloneBoard(board: Board): Board {
@@ -24,8 +40,8 @@ export function cloneBoard(board: Board): Board {
 }
 
 export function createEmptySpecialBoard(): SpecialBoard {
-  return Array.from({ length: BOARD_SIZE }, () =>
-    Array.from({ length: BOARD_SIZE }, () => SPECIAL_NONE as SpecialValue)
+  return Array.from({ length: BOARD_ROWS }, () =>
+    Array.from({ length: BOARD_COLS }, () => SPECIAL_NONE as SpecialValue)
   );
 }
 
@@ -37,9 +53,9 @@ export function skinTierForLevel(level: number): SkinTier {
 export function findRuns(board: Board): MatchRun[] {
   const runs: MatchRun[] = [];
 
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
     let col = 0;
-    while (col < BOARD_SIZE) {
+    while (col < BOARD_COLS) {
       const value = board[row][col];
       if (value === EMPTY_GEM) {
         col += 1;
@@ -47,7 +63,7 @@ export function findRuns(board: Board): MatchRun[] {
       }
 
       const start = col;
-      while (col < BOARD_SIZE && board[row][col] === value) {
+      while (col < BOARD_COLS && board[row][col] === value) {
         col += 1;
       }
 
@@ -62,9 +78,9 @@ export function findRuns(board: Board): MatchRun[] {
     }
   }
 
-  for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let col = 0; col < BOARD_COLS; col += 1) {
     let row = 0;
-    while (row < BOARD_SIZE) {
+    while (row < BOARD_ROWS) {
       const value = board[row][col];
       if (value === EMPTY_GEM) {
         row += 1;
@@ -72,7 +88,7 @@ export function findRuns(board: Board): MatchRun[] {
       }
 
       const start = row;
-      while (row < BOARD_SIZE && board[row][col] === value) {
+      while (row < BOARD_ROWS && board[row][col] === value) {
         row += 1;
       }
 
@@ -99,7 +115,7 @@ export function areAdjacent(a: Cell, b: Cell) {
 }
 
 export function isInside(cell: Cell) {
-  return cell.row >= 0 && cell.row < BOARD_SIZE && cell.col >= 0 && cell.col < BOARD_SIZE;
+  return cell.row >= 0 && cell.row < BOARD_ROWS && cell.col >= 0 && cell.col < BOARD_COLS;
 }
 
 export function swapCells<T>(board: T[][], a: Cell, b: Cell) {
@@ -119,8 +135,8 @@ export function swapWouldMatch(board: Board, a: Cell, b: Cell) {
 }
 
 export function findHint(board: Board): [Cell, Cell] | null {
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
+    for (let col = 0; col < BOARD_COLS; col += 1) {
       const here = { row, col };
       const right = { row, col: col + 1 };
       const down = { row: row + 1, col };
@@ -203,9 +219,11 @@ export function expandRemoval(matched: Set<number>, creationKeys: Set<number>, s
     }
 
     if (special === SPECIAL_LINE) {
-      for (let index = 0; index < BOARD_SIZE; index += 1) {
-        affected.push(cellKey({ row, col: index }));
-        affected.push(cellKey({ row: index, col }));
+      for (let lineCol = 0; lineCol < BOARD_COLS; lineCol += 1) {
+        affected.push(cellKey({ row, col: lineCol }));
+      }
+      for (let lineRow = 0; lineRow < BOARD_ROWS; lineRow += 1) {
+        affected.push(cellKey({ row: lineRow, col }));
       }
     }
 
@@ -225,15 +243,22 @@ export function expandRemoval(matched: Set<number>, creationKeys: Set<number>, s
 }
 
 export function applyGravity(board: Board, specials: SpecialBoard, spawn: () => GemValue) {
-  for (let col = 0; col < BOARD_SIZE; col += 1) {
-    let writeRow = BOARD_SIZE - 1;
-    for (let row = BOARD_SIZE - 1; row >= 0; row -= 1) {
+  applyGravityWithPlan(board, specials, spawn);
+}
+
+export function applyGravityWithPlan(board: Board, specials: SpecialBoard, spawn: () => GemValue): GravityPlan {
+  const plan: GravityPlan = { moves: [], spawns: [] };
+
+  for (let col = 0; col < BOARD_COLS; col += 1) {
+    let writeRow = BOARD_ROWS - 1;
+    for (let row = BOARD_ROWS - 1; row >= 0; row -= 1) {
       if (board[row][col] === EMPTY_GEM) {
         continue;
       }
       board[writeRow][col] = board[row][col];
       specials[writeRow][col] = specials[row][col];
       if (writeRow !== row) {
+        plan.moves.push({ from: { row, col }, to: { row: writeRow, col } });
         board[row][col] = EMPTY_GEM;
         specials[row][col] = SPECIAL_NONE;
       }
@@ -241,10 +266,14 @@ export function applyGravity(board: Board, specials: SpecialBoard, spawn: () => 
     }
 
     for (let row = writeRow; row >= 0; row -= 1) {
-      board[row][col] = spawn();
+      const value = spawn();
+      board[row][col] = value;
       specials[row][col] = SPECIAL_NONE;
+      plan.spawns.push({ cell: { row, col }, value });
     }
   }
+
+  return plan;
 }
 
 export function makeBoard(random: RandomFn = Math.random): Board {
@@ -252,10 +281,10 @@ export function makeBoard(random: RandomFn = Math.random): Board {
 
   for (let attempt = 0; attempt < 240; attempt += 1) {
     const next = seededRandom(seed + attempt * 1013904223);
-    const board = Array.from({ length: BOARD_SIZE }, () => Array.from({ length: BOARD_SIZE }, () => EMPTY_GEM as GemValue));
+    const board = Array.from({ length: BOARD_ROWS }, () => Array.from({ length: BOARD_COLS }, () => EMPTY_GEM as GemValue));
 
-    for (let row = 0; row < BOARD_SIZE; row += 1) {
-      for (let col = 0; col < BOARD_SIZE; col += 1) {
+    for (let row = 0; row < BOARD_ROWS; row += 1) {
+      for (let col = 0; col < BOARD_COLS; col += 1) {
         board[row][col] = pickGemWithoutImmediateRun(board, row, col, next);
       }
     }
@@ -270,8 +299,8 @@ export function makeBoard(random: RandomFn = Math.random): Board {
 
 export function shuffleBoard(board: Board, specials: SpecialBoard, random: RandomFn = Math.random) {
   const pieces: Array<{ gem: GemValue; special: SpecialValue }> = [];
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
+    for (let col = 0; col < BOARD_COLS; col += 1) {
       pieces.push({ gem: board[row][col], special: specials[row][col] });
     }
   }
@@ -294,8 +323,8 @@ export function shuffleBoard(board: Board, specials: SpecialBoard, random: Rando
   }
 
   const replacement = makeBoard(random);
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
+    for (let col = 0; col < BOARD_COLS; col += 1) {
       board[row][col] = replacement[row][col];
       specials[row][col] = SPECIAL_NONE;
     }
@@ -337,7 +366,9 @@ function forcedMoveBoard(): Board {
     [4, 5, 0, 1, 2, 3, 4, 5],
     [5, 1, 2, 3, 4, 5, 0, 1],
     [1, 2, 3, 4, 5, 0, 1, 2],
-    [2, 3, 4, 5, 0, 1, 2, 3]
+    [2, 3, 4, 5, 0, 1, 2, 3],
+    [3, 4, 5, 0, 1, 2, 3, 4],
+    [4, 5, 0, 1, 2, 3, 4, 5]
   ];
 
   if (anyMatch(board) || !findHint(board)) {
@@ -349,8 +380,8 @@ function forcedMoveBoard(): Board {
 
 function writePieces(board: Board, specials: SpecialBoard, pieces: Array<{ gem: GemValue; special: SpecialValue }>) {
   let index = 0;
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
+    for (let col = 0; col < BOARD_COLS; col += 1) {
       board[row][col] = pieces[index].gem;
       specials[row][col] = pieces[index].special;
       index += 1;

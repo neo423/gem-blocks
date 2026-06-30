@@ -6,7 +6,8 @@ const metrics = {
   boardY: 112,
   gemSize: 68,
   gap: 7,
-  boardSize: 8
+  boardRows: 10,
+  boardCols: 8
 };
 
 describe("match-3 board input mapping", () => {
@@ -25,6 +26,6 @@ describe("match-3 board input mapping", () => {
   });
 
   test("maps the bottom-right gem correctly", () => {
-    expect(pointerToBoardCell(619.5, 671, metrics)).toEqual({ row: 7, col: 7 });
+    expect(pointerToBoardCell(619.5, 821, metrics)).toEqual({ row: 9, col: 7 });
   });
 });

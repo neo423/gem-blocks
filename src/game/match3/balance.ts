@@ -1,6 +1,8 @@
 import type { SkinTier } from "./types";
 
-export const BOARD_SIZE = 8;
+export const BOARD_ROWS = 10;
+export const BOARD_COLS = 8;
+export const BOARD_SIZE = BOARD_COLS;
 export const GEM_COLORS = 6;
 export const EMPTY_GEM = -1;
 
