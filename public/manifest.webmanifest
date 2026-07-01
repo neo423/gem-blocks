@@ -1,0 +1,19 @@
+{
+  "name": "寶石方塊",
+  "short_name": "寶石方塊",
+  "description": "手機版寶石消除遊戲",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090a12",
+  "theme_color": "#090a12",
+  "icons": [
+    {
+      "src": "/gem-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

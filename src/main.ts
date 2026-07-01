@@ -49,6 +49,44 @@ const ui = {
 
 let overlayMode: OverlayState["mode"] = "menu";
 
+const GAME_WRAP_RATIO = 560 / 1010;
+const MAX_GAME_WIDTH = 560;
+const MIN_GAME_WIDTH = 220;
+const DESKTOP_VERTICAL_RESERVE = 210;
+const MOBILE_VERTICAL_RESERVE = 286;
+
+let viewportFrame = 0;
+
+function syncViewportHeight() {
+  viewportFrame = 0;
+  const height = Math.max(320, Math.round(window.visualViewport?.height ?? window.innerHeight));
+  const width = Math.max(320, Math.round(window.visualViewport?.width ?? window.innerWidth));
+  const isMobile = width <= 680;
+  const horizontalReserve = isMobile ? 12 : 24;
+  const verticalReserve = isMobile ? MOBILE_VERTICAL_RESERVE : DESKTOP_VERTICAL_RESERVE;
+  const availableWidth = width - horizontalReserve;
+  const availableHeightWidth = (height - verticalReserve) * GAME_WRAP_RATIO;
+  const gameWidth = Math.round(
+    Math.max(MIN_GAME_WIDTH, Math.min(MAX_GAME_WIDTH, availableWidth, availableHeightWidth))
+  );
+
+  document.documentElement.style.setProperty("--app-height", `${height}px`);
+  document.documentElement.style.setProperty("--game-width", `${gameWidth}px`);
+}
+
+function scheduleViewportSync() {
+  if (viewportFrame) {
+    cancelAnimationFrame(viewportFrame);
+  }
+  viewportFrame = requestAnimationFrame(syncViewportHeight);
+}
+
+syncViewportHeight();
+window.addEventListener("resize", scheduleViewportSync);
+window.addEventListener("orientationchange", scheduleViewportSync);
+window.visualViewport?.addEventListener("resize", scheduleViewportSync);
+window.visualViewport?.addEventListener("scroll", scheduleViewportSync);
+
 new Phaser.Game(MATCH3_GAME_CONFIG);
 
 window.addEventListener("gem-ui", (event) => {
