@@ -30,9 +30,9 @@ type OverlayState = {
 const ui = {
   level: document.querySelector<HTMLSpanElement>("#ui-level")!,
   score: document.querySelector<HTMLSpanElement>("#ui-score")!,
+  targetCard: document.querySelector<HTMLSpanElement>("#ui-target-card")!,
   target: document.querySelector<HTMLSpanElement>("#ui-target")!,
-  time: document.querySelector<HTMLSpanElement>("#ui-time")!,
-  timeSmall: document.querySelector<HTMLSpanElement>("#ui-time-small")!,
+  time: document.querySelector<HTMLDivElement>("#ui-time")!,
   tier: document.querySelector<HTMLSpanElement>("#ui-tier")!,
   best: document.querySelector<HTMLSpanElement>("#ui-best")!,
   progress: document.querySelector<HTMLDivElement>("#ui-progress")!,
@@ -52,29 +52,12 @@ const ui = {
 
 let overlayMode: OverlayState["mode"] = "menu";
 
-const GAME_WRAP_RATIO = 560 / 720;
-const MAX_GAME_WIDTH = 560;
-const MIN_GAME_WIDTH = 220;
-const DESKTOP_VERTICAL_RESERVE = 250;
-const MOBILE_VERTICAL_RESERVE = 255;
-
 let viewportFrame = 0;
 
 function syncViewportHeight() {
   viewportFrame = 0;
   const height = Math.max(320, Math.round(window.visualViewport?.height ?? window.innerHeight));
-  const width = Math.max(320, Math.round(window.visualViewport?.width ?? window.innerWidth));
-  const isMobile = width <= 680;
-  const horizontalReserve = isMobile ? 8 : 24;
-  const verticalReserve = isMobile ? MOBILE_VERTICAL_RESERVE : DESKTOP_VERTICAL_RESERVE;
-  const availableWidth = width - horizontalReserve;
-  const availableHeightWidth = (height - verticalReserve) * GAME_WRAP_RATIO;
-  const gameWidth = Math.round(
-    Math.max(MIN_GAME_WIDTH, Math.min(MAX_GAME_WIDTH, availableWidth, availableHeightWidth))
-  );
-
   document.documentElement.style.setProperty("--app-height", `${height}px`);
-  document.documentElement.style.setProperty("--game-width", `${gameWidth}px`);
 }
 
 function scheduleViewportSync() {
@@ -133,11 +116,10 @@ function renderUi(state: UiState) {
 
   ui.level.textContent = String(state.level);
   ui.score.textContent = String(state.totalScore);
+  ui.targetCard.textContent = String(state.target);
   ui.target.textContent = `${state.levelScore} / ${state.target}`;
   ui.time.textContent = formattedTime;
-  ui.timeSmall.textContent = formattedTime;
   ui.time.classList.toggle("low", state.timeLeft <= 15 && state.state === "playing");
-  ui.timeSmall.classList.toggle("low", state.timeLeft <= 15 && state.state === "playing");
   ui.tier.textContent = state.tierName;
   ui.best.textContent = `${state.bestScore} / Lv.${state.bestLevel}`;
   ui.progress.style.width = `${Math.round(state.progress * 100)}%`;
