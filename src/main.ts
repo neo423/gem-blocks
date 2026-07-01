@@ -49,11 +49,11 @@ const ui = {
 
 let overlayMode: OverlayState["mode"] = "menu";
 
-const GAME_WRAP_RATIO = 560 / 1010;
+const GAME_WRAP_RATIO = 560 / 782;
 const MAX_GAME_WIDTH = 560;
 const MIN_GAME_WIDTH = 220;
 const DESKTOP_VERTICAL_RESERVE = 210;
-const MOBILE_VERTICAL_RESERVE = 286;
+const MOBILE_VERTICAL_RESERVE = 230;
 
 let viewportFrame = 0;
 

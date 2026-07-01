@@ -45,7 +45,7 @@ body {
 #game-wrap {
   position: relative;
   width: min(calc(100vw - 24px), var(--game-width));
-  aspect-ratio: 560 / 1010;
+  aspect-ratio: 560 / 782;
 }
 
 #game {
@@ -314,21 +314,46 @@ button:disabled {
     min-height: 100dvh;
     min-height: var(--app-height);
     justify-content: flex-start;
-    gap: 7px;
+    gap: 6px;
     overflow: hidden;
-    padding: max(8px, env(safe-area-inset-top)) 8px max(10px, env(safe-area-inset-bottom));
+    padding: max(7px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
   }
 
   #hud {
     grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .stat {
+    min-height: 50px;
+    padding: 5px 9px;
   }
 
   .stat.wide {
     grid-column: 1 / -1;
+    min-height: 44px;
+  }
+
+  .label {
+    font-size: 10px;
   }
 
   .value {
-    font-size: 18px;
+    font-size: 17px;
+  }
+
+  #progress-panel {
+    padding: 7px 9px;
+  }
+
+  .progress-copy,
+  .best {
+    font-size: 11px;
+  }
+
+  .progress-track {
+    height: 7px;
+    margin: 5px 0 4px;
   }
 
   #game-wrap {
@@ -337,7 +362,12 @@ button:disabled {
 
   #controls {
     width: min(calc(100vw - 16px), 560px);
+    gap: 6px;
     margin-top: auto;
+  }
+
+  button {
+    min-height: 42px;
   }
 
   .overlay-card h1 {

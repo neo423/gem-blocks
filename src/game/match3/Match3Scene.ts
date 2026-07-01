@@ -38,7 +38,7 @@ type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "sh
 type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 560;
-const HEIGHT = 1010;
+const HEIGHT = 782;
 const GEM_SIZE = 58;
 const GAP = 6;
 const BOARD_PAD = 16;
@@ -173,7 +173,8 @@ export class Match3Scene extends Phaser.Scene {
     const g = this.add.graphics();
     const frameTop = BOARD_Y - BOARD_PAD;
     const frameBottom = frameTop + BOARD_PIXEL_HEIGHT + BOARD_PAD * 2;
-    const bottomPanelY = frameBottom + 12;
+    const bottomPanelY = frameBottom + 10;
+    const bottomPanelHeight = Math.max(0, HEIGHT - bottomPanelY - 10);
     const gemRailHeight = Math.max(50, frameTop - 20);
     const gemColors = [0xe83f5f, 0xf4c542, 0x08b77d, 0x2b82d9, 0x8c4be8, 0xbfefff];
     const drawDiamond = (x: number, y: number, size: number, color: number, alpha = 1) => {
@@ -210,38 +211,19 @@ export class Match3Scene extends Phaser.Scene {
       g.fillRect(x, frameTop + 18 + (i % 4) * 112, 18, 56);
     }
 
-    g.fillStyle(0x11151d, 0.98);
-    g.fillRoundedRect(14, bottomPanelY, WIDTH - 28, HEIGHT - bottomPanelY - 18, 20);
-    g.lineStyle(2, 0xd8b56a, 0.42);
-    g.strokeRoundedRect(14, bottomPanelY, WIDTH - 28, HEIGHT - bottomPanelY - 18, 20);
-    g.fillStyle(0x251d19, 0.86);
-    g.fillRoundedRect(26, bottomPanelY + 17, WIDTH - 52, HEIGHT - bottomPanelY - 52, 16);
+    if (bottomPanelHeight > 4) {
+      g.fillStyle(0x11151d, 0.98);
+      g.fillRoundedRect(14, bottomPanelY, WIDTH - 28, bottomPanelHeight, 12);
+      g.lineStyle(2, 0xd8b56a, 0.38);
+      g.strokeRoundedRect(14, bottomPanelY, WIDTH - 28, bottomPanelHeight, 12);
 
-    for (let row = 0; row < 2; row += 1) {
-      const y = bottomPanelY + 44 + row * 54;
-      g.fillStyle(0x070b12, 0.36);
-      g.fillRoundedRect(42, y - 18, WIDTH - 84, 36, 14);
-      g.lineStyle(1, 0xffd166, 0.14);
-      g.lineBetween(54, y + 18, WIDTH - 54, y + 18);
+      const y = bottomPanelY + bottomPanelHeight / 2;
       for (let i = 0; i < 8; i += 1) {
-        const x = 66 + i * 60 + (row % 2) * 18;
-        drawDiamond(x, y + (i % 2) * 7, 7 + (i % 3), gemColors[(i + row * 2) % gemColors.length], 0.3);
+        const x = 70 + i * 60;
+        drawDiamond(x, y + (i % 2) * 2, 5 + (i % 3), gemColors[(i + 2) % gemColors.length], 0.42);
+        g.lineStyle(2, 0xffffff, 0.08);
+        g.lineBetween(x - 18, y + 8, x + 18, y + 8);
       }
-    }
-
-    for (let i = 0; i < 20; i += 1) {
-      const x = 24 + i * 28;
-      const y = bottomPanelY + 38 + (i % 3) * 22;
-      g.lineStyle(1, i % 2 === 0 ? 0xc99b48 : 0x58d5bd, 0.22);
-      g.strokeTriangle(x, y + 22, x + 18, y - 4, x + 38, y + 22);
-    }
-
-    for (let i = 0; i < 9; i += 1) {
-      const x = 56 + i * 56;
-      const y = HEIGHT - 54 - (i % 2) * 10;
-      drawDiamond(x, y, 12 + (i % 3) * 3, gemColors[(i + 2) % gemColors.length], 0.52);
-      g.lineStyle(2, 0xffffff, 0.1);
-      g.lineBetween(x - 22, y + 18, x + 22, y + 18);
     }
   }
 
