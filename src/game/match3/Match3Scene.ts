@@ -37,8 +37,8 @@ type PlayState = "menu" | "playing" | "busy" | "paused" | "over";
 type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "shuffle" | "sound";
 type RenderBoardOptions = { dropIn?: boolean };
 
-const WIDTH = 720;
-const HEIGHT = 820;
+const WIDTH = 560;
+const HEIGHT = 940;
 const GEM_SIZE = 56;
 const GAP = 6;
 const BOARD_PAD = 16;
@@ -46,7 +46,7 @@ const INPUT_FORGIVENESS = 12;
 const BOARD_PIXEL_WIDTH = BOARD_COLS * GEM_SIZE + (BOARD_COLS - 1) * GAP;
 const BOARD_PIXEL_HEIGHT = BOARD_ROWS * GEM_SIZE + (BOARD_ROWS - 1) * GAP;
 const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
-const BOARD_Y = 92;
+const BOARD_Y = 112;
 const SAVE_KEY = "gem-blocks-save-v1";
 
 export class Match3Scene extends Phaser.Scene {

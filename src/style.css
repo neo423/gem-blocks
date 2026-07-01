@@ -6,6 +6,12 @@ body,
   margin: 0;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   overflow: hidden;
   background: #090a12;
@@ -33,11 +39,14 @@ body {
 
 #game-wrap {
   position: relative;
-  width: min(100vw - 24px, 720px, calc((100vh - 210px) * 0.878));
-  aspect-ratio: 720 / 820;
+  width: min(calc(100vw - 24px), 560px, calc((100vh - 210px) * 0.596));
+  width: min(calc(100vw - 24px), 560px, calc((100dvh - 210px) * 0.596));
+  aspect-ratio: 560 / 940;
 }
 
 #game {
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
 }
@@ -269,10 +278,20 @@ button:disabled {
 }
 
 @media (max-width: 680px) {
+  html,
+  body,
   #app {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  #app {
+    min-height: 100vh;
+    min-height: 100dvh;
     justify-content: flex-start;
     gap: 7px;
-    padding: 10px 8px;
+    overflow: hidden;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
   }
 
   #hud {
@@ -288,7 +307,12 @@ button:disabled {
   }
 
   #game-wrap {
-    width: min(calc(100vw - 12px), calc((100vh - 260px) * 0.878));
+    width: min(calc(100vw - 12px), calc((100vh - 246px) * 0.596));
+    width: min(calc(100vw - 12px), calc((100dvh - 246px) * 0.596));
+  }
+
+  #controls {
+    margin-top: auto;
   }
 
   .overlay-card h1 {
