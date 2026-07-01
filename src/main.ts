@@ -38,8 +38,10 @@ const ui = {
   combo: document.querySelector<HTMLDivElement>("#combo-toast")!,
   hint: document.querySelector<HTMLButtonElement>("#hint-btn")!,
   shuffle: document.querySelector<HTMLButtonElement>("#shuffle-btn")!,
+  shuffleCount: document.querySelector<HTMLSpanElement>("#ui-shuffle-count")!,
   pause: document.querySelector<HTMLButtonElement>("#pause-btn")!,
   sound: document.querySelector<HTMLButtonElement>("#sound-btn")!,
+  soundIcon: document.querySelector<HTMLSpanElement>("#ui-sound-icon")!,
   overlay: document.querySelector<HTMLDivElement>("#overlay")!,
   overlayTitle: document.querySelector<HTMLHeadingElement>("#overlay-title")!,
   overlayText: document.querySelector<HTMLParagraphElement>("#overlay-text")!,
@@ -49,11 +51,11 @@ const ui = {
 
 let overlayMode: OverlayState["mode"] = "menu";
 
-const GAME_WRAP_RATIO = 560 / 782;
+const GAME_WRAP_RATIO = 560 / 760;
 const MAX_GAME_WIDTH = 560;
 const MIN_GAME_WIDTH = 220;
-const DESKTOP_VERTICAL_RESERVE = 210;
-const MOBILE_VERTICAL_RESERVE = 230;
+const DESKTOP_VERTICAL_RESERVE = 170;
+const MOBILE_VERTICAL_RESERVE = 170;
 
 let viewportFrame = 0;
 
@@ -62,7 +64,7 @@ function syncViewportHeight() {
   const height = Math.max(320, Math.round(window.visualViewport?.height ?? window.innerHeight));
   const width = Math.max(320, Math.round(window.visualViewport?.width ?? window.innerWidth));
   const isMobile = width <= 680;
-  const horizontalReserve = isMobile ? 12 : 24;
+  const horizontalReserve = isMobile ? 8 : 24;
   const verticalReserve = isMobile ? MOBILE_VERTICAL_RESERVE : DESKTOP_VERTICAL_RESERVE;
   const availableWidth = width - horizontalReserve;
   const availableHeightWidth = (height - verticalReserve) * GAME_WRAP_RATIO;
@@ -90,7 +92,7 @@ window.visualViewport?.addEventListener("scroll", scheduleViewportSync);
 new Phaser.Game(MATCH3_GAME_CONFIG);
 
 window.addEventListener("gem-ui", (event) => {
-  updateUi((event as CustomEvent<UiState>).detail);
+  renderUi((event as CustomEvent<UiState>).detail);
 });
 
 window.addEventListener("gem-overlay", (event) => {
@@ -125,7 +127,7 @@ function dispatchAction(action: string) {
   window.dispatchEvent(new CustomEvent("gem-action", { detail: action }));
 }
 
-function updateUi(state: UiState) {
+function renderUi(state: UiState) {
   ui.level.textContent = String(state.level);
   ui.score.textContent = String(state.totalScore);
   ui.target.textContent = `${state.levelScore} / ${state.target}`;
@@ -134,11 +136,13 @@ function updateUi(state: UiState) {
   ui.tier.textContent = state.tierName;
   ui.best.textContent = `${state.bestScore} / Lv.${state.bestLevel}`;
   ui.progress.style.width = `${Math.round(state.progress * 100)}%`;
-  ui.shuffle.textContent = `洗牌 x${state.shufflesLeft}`;
+  ui.shuffleCount.textContent = `x${state.shufflesLeft}`;
+  ui.shuffle.setAttribute("aria-label", `洗牌，剩餘 ${state.shufflesLeft} 次`);
   ui.shuffle.disabled = state.shufflesLeft <= 0 || state.state !== "playing";
   ui.hint.disabled = state.state !== "playing";
   ui.pause.disabled = state.state !== "playing";
-  ui.sound.textContent = state.audioEnabled ? "音樂 開" : "音樂 關";
+  ui.soundIcon.textContent = "♪";
+  ui.sound.setAttribute("aria-label", state.audioEnabled ? "音樂開啟" : "音樂關閉");
   ui.sound.classList.toggle("off", !state.audioEnabled);
   ui.sound.setAttribute("aria-pressed", String(state.audioEnabled));
 

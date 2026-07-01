@@ -38,7 +38,7 @@ type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "sh
 type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 560;
-const HEIGHT = 782;
+const HEIGHT = 760;
 const GEM_SIZE = 58;
 const GAP = 6;
 const BOARD_PAD = 16;
@@ -46,7 +46,7 @@ const INPUT_FORGIVENESS = 12;
 const BOARD_PIXEL_WIDTH = BOARD_COLS * GEM_SIZE + (BOARD_COLS - 1) * GAP;
 const BOARD_PIXEL_HEIGHT = BOARD_ROWS * GEM_SIZE + (BOARD_ROWS - 1) * GAP;
 const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
-const BOARD_Y = 94;
+const BOARD_Y = 84;
 const SAVE_KEY = "gem-blocks-save-v1";
 
 export class Match3Scene extends Phaser.Scene {
@@ -211,7 +211,7 @@ export class Match3Scene extends Phaser.Scene {
       g.fillRect(x, frameTop + 18 + (i % 4) * 112, 18, 56);
     }
 
-    if (bottomPanelHeight > 4) {
+    if (bottomPanelHeight > 12) {
       g.fillStyle(0x11151d, 0.98);
       g.fillRoundedRect(14, bottomPanelY, WIDTH - 28, bottomPanelHeight, 12);
       g.lineStyle(2, 0xd8b56a, 0.38);

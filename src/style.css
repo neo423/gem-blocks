@@ -9,6 +9,10 @@ body,
 :root {
   --app-height: 100vh;
   --game-width: 560px;
+  --panel-bg: rgba(8, 10, 19, 0.74);
+  --panel-border: rgba(245, 241, 223, 0.14);
+  --gold: #ffd166;
+  --mint: #11d6a0;
 }
 
 *,
@@ -45,7 +49,7 @@ body {
 #game-wrap {
   position: relative;
   width: min(calc(100vw - 24px), var(--game-width));
-  aspect-ratio: 560 / 782;
+  aspect-ratio: 560 / 760;
 }
 
 #game {
@@ -99,37 +103,44 @@ button:disabled {
 }
 
 #hud,
-#progress-panel,
 #controls {
   z-index: 2;
   width: min(100vw - 24px, 760px);
 }
 
 #hud {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-strip {
   display: grid;
-  grid-template-columns: 0.8fr 1.1fr 0.9fr 1.35fr;
-  gap: 8px;
+  grid-template-columns: 0.78fr 1.24fr 0.88fr;
+  gap: 6px;
 }
 
 .stat,
 #progress-panel {
-  border: 1px solid rgba(245, 241, 223, 0.14);
+  border: 1px solid var(--panel-border);
   border-radius: 8px;
-  background: rgba(8, 10, 19, 0.72);
+  background: var(--panel-bg);
   backdrop-filter: blur(10px);
 }
 
 .stat {
-  display: flex;
+  display: grid;
+  min-height: 40px;
   min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  padding: 8px 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 6px;
+  padding: 6px 10px;
 }
 
 .label {
   color: rgba(245, 241, 223, 0.66);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -138,7 +149,7 @@ button:disabled {
   min-width: 0;
   overflow: hidden;
   color: #fff7d8;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 900;
   line-height: 1.1;
   text-overflow: ellipsis;
@@ -154,26 +165,46 @@ button:disabled {
 }
 
 #progress-panel {
-  padding: 9px 10px;
+  padding: 7px 9px;
 }
 
-.progress-copy,
+.progress-top,
 .best {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   color: rgba(245, 241, 223, 0.74);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+  gap: 8px;
 }
 
-.progress-copy strong,
+.progress-top strong,
 .best span {
   color: #fff7d8;
 }
 
+.tier-chip {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tier-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #fff7d8;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .progress-track {
-  height: 9px;
-  margin: 7px 0 5px;
+  height: 6px;
+  margin: 5px 0 4px;
   overflow: hidden;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.42);
@@ -183,7 +214,7 @@ button:disabled {
   width: 0%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #11d6a0, #ffd166, #ff5f7d);
+  background: linear-gradient(90deg, var(--mint), var(--gold), #ff5f7d);
   transition: width 0.2s ease;
 }
 
@@ -193,9 +224,58 @@ button:disabled {
   gap: 8px;
 }
 
+.control-btn {
+  display: grid;
+  min-height: 40px;
+  place-items: center;
+  padding: 0;
+}
+
+.control-icon {
+  color: #fff7d8;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.control-count {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.sound-icon {
+  position: relative;
+}
+
 #sound-btn.off {
   color: rgba(245, 241, 223, 0.62);
   background: rgba(18, 21, 38, 0.58);
+}
+
+#sound-btn.off .sound-icon::after {
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  left: -5px;
+  height: 2px;
+  border-radius: 999px;
+  background: #ff5f7d;
+  content: "";
+  transform: rotate(-35deg);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 #combo-toast {
@@ -314,60 +394,78 @@ button:disabled {
     min-height: 100dvh;
     min-height: var(--app-height);
     justify-content: flex-start;
-    gap: 6px;
+    gap: 5px;
     overflow: hidden;
-    padding: max(7px, env(safe-area-inset-top)) 6px max(8px, env(safe-area-inset-bottom));
+    padding: max(6px, env(safe-area-inset-top)) 4px max(6px, env(safe-area-inset-bottom));
   }
 
   #hud {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    width: min(calc(100vw - 10px), 560px);
+    gap: 5px;
+  }
+
+  .status-strip {
+    gap: 5px;
   }
 
   .stat {
-    min-height: 50px;
-    padding: 5px 9px;
-  }
-
-  .stat.wide {
-    grid-column: 1 / -1;
-    min-height: 44px;
+    min-height: 34px;
+    gap: 4px;
+    padding: 4px 8px;
   }
 
   .label {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .value {
-    font-size: 17px;
+    font-size: 15px;
   }
 
   #progress-panel {
-    padding: 7px 9px;
+    padding: 5px 8px;
   }
 
-  .progress-copy,
+  .tier-name {
+    font-size: 12px;
+  }
+
+  .progress-top,
   .best {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .progress-track {
-    height: 7px;
-    margin: 5px 0 4px;
+    height: 5px;
+    margin: 4px 0 3px;
   }
 
   #game-wrap {
-    width: min(calc(100vw - 12px), var(--game-width));
+    width: min(calc(100vw - 8px), var(--game-width));
   }
 
   #controls {
-    width: min(calc(100vw - 16px), 560px);
-    gap: 6px;
+    width: min(calc(100vw - 10px), 560px);
+    gap: 5px;
     margin-top: auto;
   }
 
   button {
-    min-height: 42px;
+    min-height: 36px;
+  }
+
+  .control-btn {
+    min-height: 36px;
+  }
+
+  .control-icon {
+    font-size: 20px;
+  }
+
+  .control-count {
+    right: 6px;
+    bottom: 4px;
+    font-size: 9px;
   }
 
   .overlay-card h1 {

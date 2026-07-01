@@ -16,31 +16,35 @@
   <body>
     <main id="app">
       <section id="hud" aria-label="遊戲狀態">
-        <div class="stat">
-          <span class="label">關卡</span>
-          <span id="ui-level" class="value">1</span>
+        <div class="status-strip">
+          <div class="stat">
+            <span class="label">關</span>
+            <span id="ui-level" class="value">1</span>
+          </div>
+          <div class="stat score">
+            <span class="label">分</span>
+            <span id="ui-score" class="value">0</span>
+          </div>
+          <div class="stat">
+            <span class="label">時</span>
+            <span id="ui-time" class="value">2:30</span>
+          </div>
         </div>
-        <div class="stat score">
-          <span class="label">總分</span>
-          <span id="ui-score" class="value">0</span>
-        </div>
-        <div class="stat">
-          <span class="label">時間</span>
-          <span id="ui-time" class="value">2:30</span>
-        </div>
-        <div class="stat wide">
-          <span class="label">寶石系列</span>
-          <span id="ui-tier" class="value">經典切面</span>
-        </div>
-      </section>
 
-      <section id="progress-panel" aria-label="關卡進度">
-        <div class="progress-copy">
-          <span>本關進度</span>
-          <strong id="ui-target">0 / 1300</strong>
+        <div id="progress-panel" aria-label="本關進度">
+          <div class="progress-top">
+            <div class="tier-chip">
+              <span class="label">寶石</span>
+              <span id="ui-tier" class="tier-name">經典切面</span>
+            </div>
+            <strong id="ui-target">0 / 1300</strong>
+          </div>
+          <div class="progress-track"><div id="ui-progress"></div></div>
+          <div class="best">
+            <span>最佳</span>
+            <span id="ui-best">0 / Lv.1</span>
+          </div>
         </div>
-        <div class="progress-track"><div id="ui-progress"></div></div>
-        <div class="best">最佳紀錄 <span id="ui-best">0 / Lv.1</span></div>
       </section>
 
       <section id="game-wrap">
@@ -49,17 +53,30 @@
       </section>
 
       <section id="controls" aria-label="控制列">
-        <button id="hint-btn" type="button">提示</button>
-        <button id="shuffle-btn" type="button">洗牌 x3</button>
-        <button id="pause-btn" type="button">暫停</button>
-        <button id="sound-btn" type="button" aria-pressed="true">音樂 開</button>
+        <button id="hint-btn" class="control-btn" type="button" aria-label="提示" title="提示">
+          <span class="control-icon" aria-hidden="true">?</span>
+          <span class="sr-only">提示</span>
+        </button>
+        <button id="shuffle-btn" class="control-btn" type="button" aria-label="洗牌，剩餘 3 次" title="洗牌">
+          <span class="control-icon" aria-hidden="true">↻</span>
+          <span id="ui-shuffle-count" class="control-count" aria-hidden="true">x3</span>
+          <span class="sr-only">洗牌</span>
+        </button>
+        <button id="pause-btn" class="control-btn" type="button" aria-label="暫停" title="暫停">
+          <span class="control-icon" aria-hidden="true">Ⅱ</span>
+          <span class="sr-only">暫停</span>
+        </button>
+        <button id="sound-btn" class="control-btn sound-btn" type="button" aria-label="音樂開啟" aria-pressed="true" title="音樂">
+          <span id="ui-sound-icon" class="control-icon sound-icon" aria-hidden="true">♪</span>
+          <span class="sr-only">音樂</span>
+        </button>
       </section>
 
       <section id="overlay" class="overlay">
         <div class="overlay-card">
           <p class="eyebrow">Gem Blocks</p>
           <h1 id="overlay-title">寶石方塊</h1>
-          <p id="overlay-text">交換相鄰寶石，湊三連以上消除。</p>
+          <p id="overlay-text">交換相鄰寶石，湊三連以上消除。關卡越高，礦脈會出現更稀有的寶石。</p>
           <div id="overlay-big" class="overlay-big hidden"></div>
           <button id="overlay-button" type="button">開始開採</button>
         </div>
