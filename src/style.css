@@ -39,9 +39,9 @@ body {
 
 #game-wrap {
   position: relative;
-  width: min(calc(100vw - 24px), 560px, calc((100vh - 210px) * 0.596));
-  width: min(calc(100vw - 24px), 560px, calc((100dvh - 210px) * 0.596));
-  aspect-ratio: 560 / 940;
+  width: min(calc(100vw - 24px), 560px, calc((100vh - 210px) * 0.554));
+  width: min(calc(100vw - 24px), 560px, calc((100dvh - 210px) * 0.554));
+  aspect-ratio: 560 / 1010;
 }
 
 #game {
@@ -61,15 +61,32 @@ canvas {
 }
 
 button {
+  position: relative;
+  overflow: hidden;
   min-height: 44px;
   border: 1px solid rgba(245, 241, 223, 0.18);
   border-radius: 8px;
   color: #fdf8e8;
-  background: rgba(18, 21, 38, 0.86);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(32, 36, 63, 0.96), rgba(13, 16, 31, 0.95));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 8px 18px rgba(0, 0, 0, 0.25);
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  transition:
+    border-color 0.16s ease,
+    filter 0.16s ease,
+    transform 0.12s ease;
+}
+
+button:not(:disabled):hover {
+  border-color: rgba(255, 209, 102, 0.42);
+  filter: brightness(1.08);
+}
+
+button:not(:disabled):active {
+  transform: translateY(1px) scale(0.99);
 }
 
 button:disabled {
@@ -307,11 +324,12 @@ button:disabled {
   }
 
   #game-wrap {
-    width: min(calc(100vw - 12px), calc((100vh - 246px) * 0.596));
-    width: min(calc(100vw - 12px), calc((100dvh - 246px) * 0.596));
+    width: min(calc(100vw - 12px), calc((100vh - 246px) * 0.554));
+    width: min(calc(100vw - 12px), calc((100dvh - 246px) * 0.554));
   }
 
   #controls {
+    width: min(calc(100vw - 16px), 560px);
     margin-top: auto;
   }
 
