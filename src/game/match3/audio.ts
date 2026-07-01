@@ -23,6 +23,7 @@ export type MusicStep = {
 const MUSIC_SCALE = [392, 440, 523.25, 587.33, 659.25, 783.99];
 const MUSIC_MOTIF = [0, 2, 4, 2, 1, 3, 5, 3];
 const AUDIO_STORAGE_KEY = "gem-blocks-audio-enabled-v1";
+const AUDIO_PREFERENCE_VERSION = "2";
 
 export function musicStepForBeat(beat: number): MusicStep {
   const index = MUSIC_MOTIF[((beat % MUSIC_MOTIF.length) + MUSIC_MOTIF.length) % MUSIC_MOTIF.length];
@@ -41,8 +42,10 @@ export class GemAudio {
   private musicTimer?: number;
   private beat = 0;
   private enabledValue = true;
+  private readonly preferenceVersionKey: string;
 
   constructor(private readonly storageKey = AUDIO_STORAGE_KEY) {
+    this.preferenceVersionKey = `${storageKey}-preference-version`;
     this.enabledValue = this.readEnabled();
   }
 
@@ -56,7 +59,12 @@ export class GemAudio {
     }
     const context = this.ensureContext();
     if (context?.state === "suspended") {
-      await context.resume();
+      try {
+        await context.resume();
+      } catch {
+        // Mobile browsers can reject resume when they decide the gesture is stale.
+        // The next direct tap will retry without breaking gameplay.
+      }
     }
   }
 
@@ -241,12 +249,30 @@ export class GemAudio {
     if (typeof localStorage === "undefined") {
       return true;
     }
-    return localStorage.getItem(this.storageKey) !== "false";
+    try {
+      const storedValue = localStorage.getItem(this.storageKey);
+      const preferenceVersion = localStorage.getItem(this.preferenceVersionKey);
+
+      if (storedValue === "false" && preferenceVersion !== AUDIO_PREFERENCE_VERSION) {
+        localStorage.setItem(this.storageKey, "true");
+        localStorage.setItem(this.preferenceVersionKey, AUDIO_PREFERENCE_VERSION);
+        return true;
+      }
+
+      if (storedValue !== null && preferenceVersion !== AUDIO_PREFERENCE_VERSION) {
+        localStorage.setItem(this.preferenceVersionKey, AUDIO_PREFERENCE_VERSION);
+      }
+
+      return storedValue !== "false";
+    } catch {
+      return true;
+    }
   }
 
   private writeEnabled(enabled: boolean) {
     try {
       localStorage.setItem(this.storageKey, String(enabled));
+      localStorage.setItem(this.preferenceVersionKey, AUDIO_PREFERENCE_VERSION);
     } catch {
       // Audio preference is optional; gameplay should continue when storage is unavailable.
     }

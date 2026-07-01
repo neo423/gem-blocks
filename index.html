@@ -14,26 +14,43 @@
     <title>寶石方塊</title>
   </head>
   <body>
-    <main id="app">
-      <section id="hud" aria-label="遊戲狀態">
-        <div class="status-strip">
-          <div class="stat">
-            <span class="label">關</span>
+    <main id="app" class="game-shell">
+      <div class="game-bg" aria-hidden="true"></div>
+
+      <section id="hud" class="top-hud" aria-label="遊戲狀態">
+        <div class="hud-top-ornament" aria-hidden="true">
+          <span></span>
+          <i></i>
+          <span></span>
+        </div>
+
+        <div class="hud-main-timer" aria-label="剩餘時間">
+          <span class="hud-timer-label">TIME</span>
+          <span id="ui-time" class="hud-timer-value">02:30</span>
+        </div>
+
+        <div class="hud-stats-row">
+          <div class="hud-stat-card">
+            <span class="hud-stat-icon" aria-hidden="true">♕</span>
+            <span class="label">關卡</span>
             <span id="ui-level" class="value">1</span>
           </div>
-          <div class="stat score">
-            <span class="label">分</span>
+          <div class="hud-stat-card score">
+            <span class="hud-stat-icon" aria-hidden="true">✦</span>
+            <span class="label">分數</span>
             <span id="ui-score" class="value">0</span>
           </div>
-          <div class="stat">
-            <span class="label">時</span>
-            <span id="ui-time" class="value">2:30</span>
+          <div class="hud-stat-card">
+            <span class="hud-stat-icon" aria-hidden="true">◷</span>
+            <span class="label">時間</span>
+            <span id="ui-time-small" class="value">02:30</span>
           </div>
         </div>
 
-        <div id="progress-panel" aria-label="本關進度">
-          <div class="progress-top">
+        <div id="progress-panel" class="hud-info-panel" aria-label="本關進度">
+          <div class="hud-info-row">
             <div class="tier-chip">
+              <span class="tier-icon" aria-hidden="true">◇</span>
               <span class="label">寶石</span>
               <span id="ui-tier" class="tier-name">經典切面</span>
             </div>
@@ -47,28 +64,37 @@
         </div>
       </section>
 
-      <section id="game-wrap">
-        <div id="game"></div>
+      <section class="gem-legend" aria-label="寶石種類">
+        <span class="gem-cell"><span class="gem-piece gem-red"></span></span>
+        <span class="gem-cell"><span class="gem-piece gem-gold"></span></span>
+        <span class="gem-cell"><span class="gem-piece gem-green"></span></span>
+        <span class="gem-cell"><span class="gem-piece gem-blue"></span></span>
+        <span class="gem-cell"><span class="gem-piece gem-purple"></span></span>
+        <span class="gem-cell"><span class="gem-piece gem-white"></span></span>
+        <span class="gem-cell"><span class="gem-piece gem-red"></span></span>
+      </section>
+
+      <section id="game-wrap" class="board-frame">
+        <div id="game" class="gem-board"></div>
         <div id="combo-toast" aria-live="polite"></div>
       </section>
 
-      <section id="controls" aria-label="控制列">
-        <button id="hint-btn" class="control-btn" type="button" aria-label="提示" title="提示">
+      <section id="controls" class="bottom-controls" aria-label="控制列">
+        <button id="hint-btn" class="control-button" type="button" aria-label="幫助" title="幫助">
           <span class="control-icon" aria-hidden="true">?</span>
-          <span class="sr-only">提示</span>
+          <span class="control-label">幫助</span>
         </button>
-        <button id="shuffle-btn" class="control-btn" type="button" aria-label="洗牌，剩餘 3 次" title="洗牌">
+        <button id="shuffle-btn" class="control-button" type="button" aria-label="洗牌，剩餘 3 次" title="洗牌">
           <span class="control-icon" aria-hidden="true">↻</span>
-          <span id="ui-shuffle-count" class="control-count" aria-hidden="true">x3</span>
-          <span class="sr-only">洗牌</span>
+          <span class="control-label">洗牌 <span id="ui-shuffle-count">x3</span></span>
         </button>
-        <button id="pause-btn" class="control-btn" type="button" aria-label="暫停" title="暫停">
+        <button id="pause-btn" class="control-button" type="button" aria-label="暫停" title="暫停">
           <span class="control-icon" aria-hidden="true">Ⅱ</span>
-          <span class="sr-only">暫停</span>
+          <span class="control-label">暫停</span>
         </button>
-        <button id="sound-btn" class="control-btn sound-btn" type="button" aria-label="音樂開啟" aria-pressed="true" title="音樂">
+        <button id="sound-btn" class="control-button sound-btn" type="button" aria-label="音樂開啟" aria-pressed="true" title="音樂">
           <span id="ui-sound-icon" class="control-icon sound-icon" aria-hidden="true">♪</span>
-          <span class="sr-only">音樂</span>
+          <span class="control-label">音樂</span>
         </button>
       </section>
 

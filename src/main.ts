@@ -32,6 +32,7 @@ const ui = {
   score: document.querySelector<HTMLSpanElement>("#ui-score")!,
   target: document.querySelector<HTMLSpanElement>("#ui-target")!,
   time: document.querySelector<HTMLSpanElement>("#ui-time")!,
+  timeSmall: document.querySelector<HTMLSpanElement>("#ui-time-small")!,
   tier: document.querySelector<HTMLSpanElement>("#ui-tier")!,
   best: document.querySelector<HTMLSpanElement>("#ui-best")!,
   progress: document.querySelector<HTMLDivElement>("#ui-progress")!,
@@ -51,11 +52,11 @@ const ui = {
 
 let overlayMode: OverlayState["mode"] = "menu";
 
-const GAME_WRAP_RATIO = 560 / 760;
+const GAME_WRAP_RATIO = 560 / 720;
 const MAX_GAME_WIDTH = 560;
 const MIN_GAME_WIDTH = 220;
-const DESKTOP_VERTICAL_RESERVE = 170;
-const MOBILE_VERTICAL_RESERVE = 170;
+const DESKTOP_VERTICAL_RESERVE = 250;
+const MOBILE_VERTICAL_RESERVE = 255;
 
 let viewportFrame = 0;
 
@@ -128,21 +129,27 @@ function dispatchAction(action: string) {
 }
 
 function renderUi(state: UiState) {
+  const formattedTime = formatTime(state.timeLeft);
+
   ui.level.textContent = String(state.level);
   ui.score.textContent = String(state.totalScore);
   ui.target.textContent = `${state.levelScore} / ${state.target}`;
-  ui.time.textContent = formatTime(state.timeLeft);
+  ui.time.textContent = formattedTime;
+  ui.timeSmall.textContent = formattedTime;
   ui.time.classList.toggle("low", state.timeLeft <= 15 && state.state === "playing");
+  ui.timeSmall.classList.toggle("low", state.timeLeft <= 15 && state.state === "playing");
   ui.tier.textContent = state.tierName;
   ui.best.textContent = `${state.bestScore} / Lv.${state.bestLevel}`;
   ui.progress.style.width = `${Math.round(state.progress * 100)}%`;
   ui.shuffleCount.textContent = `x${state.shufflesLeft}`;
   ui.shuffle.setAttribute("aria-label", `洗牌，剩餘 ${state.shufflesLeft} 次`);
+  ui.shuffle.setAttribute("title", `洗牌，剩餘 ${state.shufflesLeft} 次`);
   ui.shuffle.disabled = state.shufflesLeft <= 0 || state.state !== "playing";
   ui.hint.disabled = state.state !== "playing";
   ui.pause.disabled = state.state !== "playing";
   ui.soundIcon.textContent = "♪";
   ui.sound.setAttribute("aria-label", state.audioEnabled ? "音樂開啟" : "音樂關閉");
+  ui.sound.setAttribute("title", state.audioEnabled ? "音樂開啟" : "音樂關閉");
   ui.sound.classList.toggle("off", !state.audioEnabled);
   ui.sound.setAttribute("aria-pressed", String(state.audioEnabled));
 
@@ -167,5 +174,5 @@ function formatTime(seconds: number) {
   const safe = Math.max(0, seconds);
   const minutes = Math.floor(safe / 60);
   const rest = String(safe % 60).padStart(2, "0");
-  return `${minutes}:${rest}`;
+  return `${String(minutes).padStart(2, "0")}:${rest}`;
 }
