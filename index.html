@@ -2,105 +2,57 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#030812" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="寶石方塊" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/gem-icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%2311d6a0' d='M32 3 58 22 44 61H20L6 22z'/%3E%3Cpath fill='%23fff7d8' fill-opacity='.72' d='M32 3 44 22 32 61 20 22z'/%3E%3C/svg%3E" />
     <title>寶石方塊</title>
   </head>
   <body>
-    <main id="app" class="game-shell" aria-label="寶石方塊遊戲">
-      <section id="hud" class="top-hud" aria-label="遊戲狀態">
-        <div class="hud-crest" aria-hidden="true"></div>
-
-        <div class="hud-timer-label">剩餘時間</div>
-        <div id="ui-time" class="hud-main-timer" aria-label="剩餘時間">02:30</div>
-
-        <div class="hud-stats-row">
-          <div class="hud-stat-card">
-            <div class="stat-icon" aria-hidden="true">♕</div>
-            <div>
-              <span class="stat-label">關卡</span>
-              <span id="ui-level" class="stat-value">1</span>
-            </div>
-          </div>
-          <div class="hud-stat-card">
-            <div class="stat-icon" aria-hidden="true">★</div>
-            <div>
-              <span class="stat-label">分數</span>
-              <span id="ui-score" class="stat-value">0</span>
-            </div>
-          </div>
-          <div class="hud-stat-card">
-            <div class="stat-icon" aria-hidden="true">◎</div>
-            <div>
-              <span class="stat-label">目標</span>
-              <span id="ui-target-card" class="stat-value">1300</span>
-            </div>
-          </div>
+    <main id="app">
+      <section id="hud" aria-label="遊戲狀態">
+        <div class="stat">
+          <span class="label">關卡</span>
+          <span id="ui-level" class="value">1</span>
         </div>
-
-        <div id="progress-panel" class="hud-info-panel" aria-label="本關進度">
-          <div class="info-row">
-            <div class="info-title">
-              <span aria-hidden="true">◇</span>
-              <span>寶石</span>
-              <span id="ui-tier" class="mode">經典切面</span>
-            </div>
-            <div id="ui-target" class="info-num">0 / 1300</div>
-          </div>
-          <div class="progress-line"><span id="ui-progress"></span></div>
-          <div class="info-row">
-            <div class="info-title">最佳</div>
-            <div id="ui-best" class="info-num">0 / Lv.1</div>
-          </div>
+        <div class="stat score">
+          <span class="label">總分</span>
+          <span id="ui-score" class="value">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">時間</span>
+          <span id="ui-time" class="value">2:30</span>
+        </div>
+        <div class="stat wide">
+          <span class="label">寶石系列</span>
+          <span id="ui-tier" class="value">經典切面</span>
         </div>
       </section>
 
-      <section class="gem-legend" aria-label="寶石種類">
-        <div class="gem pink round" aria-hidden="true"></div>
-        <div class="gem gold diamond" aria-hidden="true"></div>
-        <div class="gem green oct" aria-hidden="true"></div>
-        <div class="gem blue diamond" aria-hidden="true"></div>
-        <div class="gem purple triangle" aria-hidden="true"></div>
-        <div class="gem white round" aria-hidden="true"></div>
-        <div class="gem pink round" aria-hidden="true"></div>
+      <section id="progress-panel" aria-label="關卡進度">
+        <div class="progress-copy">
+          <span>本關進度</span>
+          <strong id="ui-target">0 / 1300</strong>
+        </div>
+        <div class="progress-track"><div id="ui-progress"></div></div>
+        <div class="best">最佳紀錄 <span id="ui-best">0 / Lv.1</span></div>
       </section>
 
-      <section id="game-wrap" class="board-frame" aria-label="寶石棋盤">
-        <div id="game" class="gem-board"></div>
+      <section id="game-wrap">
+        <div id="game"></div>
         <div id="combo-toast" aria-live="polite"></div>
       </section>
 
-      <nav id="controls" class="bottom-controls" aria-label="控制列">
-        <button id="hint-btn" class="control-button" type="button" aria-label="幫助" title="幫助">
-          <span class="icon" aria-hidden="true">?</span>
-          <span class="control-label">幫助</span>
-        </button>
-        <button id="shuffle-btn" class="control-button" type="button" aria-label="洗牌，剩餘 3 次" title="洗牌">
-          <span class="icon" aria-hidden="true">↶ <span id="ui-shuffle-count" class="x3">x3</span></span>
-          <span class="control-label">洗牌</span>
-        </button>
-        <button id="pause-btn" class="control-button" type="button" aria-label="暫停" title="暫停">
-          <span class="icon" aria-hidden="true">Ⅱ</span>
-          <span class="control-label">暫停</span>
-        </button>
-        <button id="sound-btn" class="control-button sound-btn" type="button" aria-label="音樂開啟" aria-pressed="true" title="音樂">
-          <span id="ui-sound-icon" class="icon sound-icon" aria-hidden="true">♪</span>
-          <span class="control-label">音樂</span>
-        </button>
-      </nav>
+      <section id="controls" aria-label="控制列">
+        <button id="hint-btn" type="button">提示</button>
+        <button id="shuffle-btn" type="button">洗牌 x3</button>
+        <button id="pause-btn" type="button">暫停</button>
+        <button id="sound-btn" type="button" aria-pressed="true">音樂 開</button>
+      </section>
 
       <section id="overlay" class="overlay">
         <div class="overlay-card">
           <p class="eyebrow">Gem Blocks</p>
           <h1 id="overlay-title">寶石方塊</h1>
-          <p id="overlay-text">交換相鄰寶石，湊三連以上消除。關卡越高，礦脈會出現更稀有的寶石。</p>
+          <p id="overlay-text">交換相鄰寶石，湊三連以上消除。</p>
           <div id="overlay-big" class="overlay-big hidden"></div>
           <button id="overlay-button" type="button">開始開採</button>
         </div>
