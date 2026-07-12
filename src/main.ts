@@ -30,6 +30,7 @@ type OverlayState = {
 const ui = {
   level: document.querySelector<HTMLSpanElement>("#ui-level")!,
   score: document.querySelector<HTMLSpanElement>("#ui-score")!,
+  targetValue: document.querySelector<HTMLSpanElement>("#ui-target-value")!,
   target: document.querySelector<HTMLSpanElement>("#ui-target")!,
   time: document.querySelector<HTMLSpanElement>("#ui-time")!,
   tier: document.querySelector<HTMLSpanElement>("#ui-tier")!,
@@ -48,6 +49,15 @@ const ui = {
 };
 
 let overlayMode: OverlayState["mode"] = "menu";
+
+function syncAppHeight() {
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  document.documentElement.style.setProperty("--app-height", `${Math.round(viewportHeight)}px`);
+}
+
+syncAppHeight();
+window.addEventListener("resize", syncAppHeight);
+window.visualViewport?.addEventListener("resize", syncAppHeight);
 
 new Phaser.Game(MATCH3_GAME_CONFIG);
 
@@ -90,6 +100,7 @@ function dispatchAction(action: string) {
 function updateUi(state: UiState) {
   ui.level.textContent = String(state.level);
   ui.score.textContent = String(state.totalScore);
+  ui.targetValue.textContent = String(state.target);
   ui.target.textContent = `${state.levelScore} / ${state.target}`;
   ui.time.textContent = formatTime(state.timeLeft);
   ui.time.classList.toggle("low", state.timeLeft <= 15 && state.state === "playing");

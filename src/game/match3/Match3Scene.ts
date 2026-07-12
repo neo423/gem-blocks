@@ -38,7 +38,7 @@ type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "sh
 type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 560;
-const HEIGHT = 940;
+const HEIGHT = 790;
 const GEM_SIZE = 56;
 const GAP = 6;
 const BOARD_PAD = 16;
@@ -46,7 +46,7 @@ const INPUT_FORGIVENESS = 12;
 const BOARD_PIXEL_WIDTH = BOARD_COLS * GEM_SIZE + (BOARD_COLS - 1) * GAP;
 const BOARD_PIXEL_HEIGHT = BOARD_ROWS * GEM_SIZE + (BOARD_ROWS - 1) * GAP;
 const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
-const BOARD_Y = 112;
+const BOARD_Y = 66;
 const SAVE_KEY = "gem-blocks-save-v1";
 
 export class Match3Scene extends Phaser.Scene {
@@ -171,23 +171,23 @@ export class Match3Scene extends Phaser.Scene {
 
   private drawBackground() {
     const g = this.add.graphics();
-    g.fillStyle(0x090a12);
+    g.fillStyle(0x02050b);
     g.fillRect(0, 0, WIDTH, HEIGHT);
-    g.fillStyle(0x13241f, 0.9);
+    g.fillStyle(0x071923, 0.96);
     g.fillRect(0, 0, WIDTH, 74);
-    g.fillStyle(0x3e2e19, 0.75);
+    g.fillStyle(0x10141c, 0.96);
     g.fillRect(0, HEIGHT - 92, WIDTH, 92);
 
     for (let i = 0; i < 26; i += 1) {
       const x = 14 + i * 34;
       const y = HEIGHT - 72 + (i % 3) * 14;
-      g.lineStyle(1, i % 2 === 0 ? 0xc99b48 : 0x215b53, 0.22);
+      g.lineStyle(1, i % 2 === 0 ? 0xd6b25e : 0x00d7e8, i % 2 === 0 ? 0.24 : 0.12);
       g.strokeTriangle(x, y + 22, x + 22, y - 4, x + 45, y + 22);
     }
 
     for (let i = 0; i < 18; i += 1) {
       const x = 22 + i * 40;
-      g.fillStyle(i % 2 === 0 ? 0x6c2040 : 0x0f5d63, 0.18);
+      g.fillStyle(i % 2 === 0 ? 0x35184e : 0x075d69, 0.12);
       g.fillRect(x, 86 + (i % 4) * 118, 24, 64);
     }
   }
@@ -198,20 +198,26 @@ export class Match3Scene extends Phaser.Scene {
     const y = BOARD_Y - BOARD_PAD;
     const width = BOARD_PIXEL_WIDTH + BOARD_PAD * 2;
     const height = BOARD_PIXEL_HEIGHT + BOARD_PAD * 2;
-    this.boardFrame.fillStyle(0x020309, 0.72);
-    this.boardFrame.fillRoundedRect(x + 8, y + 10, width, height, 18);
-    this.boardFrame.fillStyle(0x121526, 0.96);
+    this.boardFrame.fillStyle(0x000207, 0.86);
+    this.boardFrame.fillRoundedRect(x + 8, y + 11, width, height, 18);
+    this.boardFrame.fillStyle(0x050b14, 0.98);
     this.boardFrame.fillRoundedRect(x, y, width, height, 18);
-    this.boardFrame.lineStyle(4, 0xd8b56a, 0.74);
+    this.boardFrame.lineStyle(10, 0x00eaff, 0.07);
+    this.boardFrame.strokeRoundedRect(x - 2, y - 2, width + 4, height + 4, 20);
+    this.boardFrame.lineStyle(6, 0x725423, 0.96);
     this.boardFrame.strokeRoundedRect(x, y, width, height, 18);
-    this.boardFrame.lineStyle(1, 0x6df2d0, 0.24);
+    this.boardFrame.lineStyle(2, 0xffdf82, 0.92);
+    this.boardFrame.strokeRoundedRect(x + 3, y + 3, width - 6, height - 6, 16);
+    this.boardFrame.lineStyle(1, 0x4cecff, 0.3);
     this.boardFrame.strokeRoundedRect(x + 9, y + 9, width - 18, height - 18, 12);
 
     for (let row = 0; row < BOARD_ROWS; row += 1) {
       for (let col = 0; col < BOARD_COLS; col += 1) {
         const p = this.cellToWorld({ row, col });
-        this.boardFrame.fillStyle((row + col) % 2 === 0 ? 0x111827 : 0x0c111b, 0.92);
+        this.boardFrame.fillStyle((row + col) % 2 === 0 ? 0x091522 : 0x050d17, 0.97);
         this.boardFrame.fillRoundedRect(p.x - GEM_SIZE / 2, p.y - GEM_SIZE / 2, GEM_SIZE, GEM_SIZE, 8);
+        this.boardFrame.lineStyle(1, 0xd6b25e, 0.07);
+        this.boardFrame.strokeRoundedRect(p.x - GEM_SIZE / 2, p.y - GEM_SIZE / 2, GEM_SIZE, GEM_SIZE, 8);
       }
     }
   }
