@@ -1,15 +1,16 @@
 :root {
   --app-height: 100dvh;
-  --bg-main: #02050b;
-  --bg-panel: #071421;
-  --bg-panel-2: #0b1c2d;
-  --gold: #d6b25e;
-  --gold-light: #ffe6a3;
-  --cyan-glow: #00eaff;
-  --text-main: #fff6dc;
-  --text-muted: #aab8c4;
-  --border-soft: rgba(214, 178, 94, 0.45);
-  --panel-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.92), 0 0 12px rgba(0, 234, 255, 0.08);
+  --bg-main: #159ed9;
+  --bg-panel: #063d78;
+  --bg-panel-2: #075898;
+  --hud-blue: #063d78;
+  --gold: #edae28;
+  --gold-light: #fff1a0;
+  --cyan-glow: #75e8ff;
+  --text-main: #ffffff;
+  --text-muted: #d7efff;
+  --border-soft: rgba(255, 205, 75, 0.72);
+  --panel-shadow: inset 0 2px 7px rgba(0, 22, 54, 0.76), 0 3px 0 rgba(92, 45, 5, 0.72), 0 6px 14px rgba(0, 47, 85, 0.32);
 }
 
 html,
@@ -21,7 +22,7 @@ body,
 }
 
 html {
-  background-color: #06131a;
+  background-color: #159ed9;
   color-scheme: dark;
 }
 
@@ -34,15 +35,15 @@ html {
 body {
   overflow: hidden;
   color: var(--text-main);
-  background-color: #06131a;
-  background:
-    linear-gradient(90deg, rgba(214, 178, 94, 0.025) 1px, transparent 1px) 0 0 / 38px 38px,
-    linear-gradient(180deg, #071522 0%, var(--bg-main) 48%, #010207 100%);
+  background-color: #159ed9;
+  background-image: url("/assets/gem-kingdom-game-bg.png");
+  background-position: center;
+  background-size: cover;
   font-family: Inter, "Microsoft JhengHei", "PingFang TC", sans-serif;
 }
 
 button {
-  border: 1px solid var(--border-soft);
+  border: 2px solid var(--border-soft);
   color: var(--text-main);
   background: linear-gradient(180deg, #172b3d, #07101c 62%, #03070d);
   box-shadow:
@@ -86,9 +87,7 @@ button:disabled {
     max(7px, env(safe-area-inset-top))
     8px
     max(8px, env(safe-area-inset-bottom));
-  background:
-    linear-gradient(180deg, rgba(0, 234, 255, 0.055), transparent 22%),
-    linear-gradient(135deg, rgba(62, 25, 90, 0.11), transparent 42%, rgba(214, 178, 94, 0.045));
+  background: url("/assets/gem-kingdom-game-bg.png") center / cover no-repeat;
 }
 
 .top-hud,
@@ -102,7 +101,7 @@ button:disabled {
 .top-hud {
   display: grid;
   height: clamp(112px, 16dvh, 132px);
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.34fr);
   gap: 6px;
 }
 
@@ -110,47 +109,68 @@ button:disabled {
 .hud-data-panel,
 .gem-legend,
 .overlay-card {
-  border: 1px solid var(--gold);
-  background: linear-gradient(155deg, rgba(11, 31, 48, 0.98), rgba(3, 8, 15, 0.98));
+  border: 3px solid var(--gold);
+  background: linear-gradient(180deg, rgba(9, 93, 151, 0.98), rgba(3, 43, 92, 0.99));
   box-shadow:
     var(--panel-shadow),
-    inset 0 0 0 1px rgba(255, 230, 163, 0.08);
+    inset 0 0 0 1px rgba(255, 246, 172, 0.72);
 }
 
 .brand-timer-panel {
   display: grid;
+  height: 100%;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
-  grid-template-rows: 65fr 35fr;
-  border-radius: 10px;
+  grid-template-rows: minmax(0, 1fr) 34px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  box-shadow: none;
 }
 
 .game-logo {
   display: block;
-  width: 94%;
-  height: calc(100% - 5px);
+  width: 100%;
+  height: 100%;
   min-height: 0;
   place-self: center;
   object-fit: contain;
-  transform: translateY(5px);
-  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.72));
+  transform: translateY(2px);
+  filter: drop-shadow(0 3px 0 rgba(93, 42, 4, 0.9)) drop-shadow(0 5px 7px rgba(0, 63, 97, 0.48));
 }
 
 .timer-well {
   display: grid;
+  height: 34px;
   min-height: 0;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 25px auto 1fr;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px 3px;
-  border-top: 1px solid rgba(214, 178, 94, 0.48);
-  background: linear-gradient(180deg, rgba(1, 5, 10, 0.55), rgba(0, 0, 0, 0.82));
-  box-shadow: inset 0 4px 9px rgba(0, 0, 0, 0.76);
+  padding: 2px 8px 3px 4px;
+  border: 3px solid var(--gold);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #0b5d9b, #06366d);
+  box-shadow: var(--panel-shadow), inset 0 0 0 1px rgba(255, 246, 172, 0.58);
+  overflow: hidden;
+}
+
+.timer-well::before {
+  content: "\231B";
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff1a0;
+  background: #075394;
+  font-size: 17px;
+  text-shadow: 0 2px 1px #75420b;
 }
 
 .timer-label {
-  color: var(--text-muted);
-  font-size: 9px;
+  color: #fff;
+  font-size: 10px;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -158,12 +178,12 @@ button:disabled {
 .hud-main-timer {
   min-width: 0;
   color: var(--gold-light);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Trebuchet MS", "Microsoft JhengHei", sans-serif;
   font-size: 24px;
   font-weight: 800;
   line-height: 1;
   text-align: right;
-  text-shadow: 0 0 10px rgba(0, 234, 255, 0.28), 0 2px 2px #000;
+  text-shadow: 0 2px 0 #75420b, 0 0 8px rgba(255, 225, 102, 0.44);
   white-space: nowrap;
 }
 
@@ -179,7 +199,7 @@ button:disabled {
   grid-template-rows: auto 1fr;
   gap: 5px;
   padding: 5px;
-  border-radius: 10px;
+  border-radius: 15px;
 }
 
 .hud-stats-row {
@@ -197,14 +217,14 @@ button:disabled {
   justify-items: center;
   overflow: hidden;
   padding: 3px 2px;
-  border: 1px solid var(--border-soft);
-  border-radius: 6px;
-  background: linear-gradient(180deg, rgba(9, 22, 36, 0.96), rgba(2, 6, 12, 0.98));
-  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.88);
+  border: 2px solid var(--border-soft);
+  border-radius: 9px;
+  background: linear-gradient(180deg, #0a548f, #052e65);
+  box-shadow: inset 0 3px 7px rgba(0, 20, 55, 0.72), inset 0 0 0 1px rgba(255, 246, 172, 0.3);
 }
 
 .hud-stat-label {
-  color: var(--text-muted);
+  color: #fff;
   font-size: 9px;
   font-weight: 700;
 }
@@ -221,7 +241,7 @@ button:disabled {
 }
 
 .score-stat .hud-stat-value {
-  color: #ffd66f;
+  color: #fff;
 }
 
 .hud-info-panel {
@@ -231,10 +251,10 @@ button:disabled {
   align-content: center;
   gap: 4px;
   padding: 4px 7px;
-  border: 1px solid rgba(214, 178, 94, 0.31);
-  border-radius: 7px;
-  background: rgba(2, 8, 15, 0.76);
-  box-shadow: inset 0 3px 9px rgba(0, 0, 0, 0.82);
+  border: 1px solid rgba(0, 37, 82, 0.8);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(8, 82, 139, 0.9), rgba(4, 49, 99, 0.96));
+  box-shadow: inset 0 3px 8px rgba(0, 29, 68, 0.65);
 }
 
 .hud-info-row {
@@ -243,7 +263,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  color: var(--text-muted);
+  color: #fff;
   font-size: 9px;
   font-weight: 700;
   line-height: 1.1;
@@ -259,15 +279,15 @@ button:disabled {
 
 .best-row {
   padding-top: 1px;
-  border-top: 1px solid rgba(214, 178, 94, 0.14);
+  border-top: 1px solid rgba(255, 224, 113, 0.35);
 }
 
 .progress-track {
   height: 6px;
   overflow: hidden;
-  border: 1px solid rgba(214, 178, 94, 0.2);
+  border: 2px solid #d68e17;
   border-radius: 6px;
-  background: #010308;
+  background: #031d3c;
   box-shadow: inset 0 2px 4px #000;
 }
 
@@ -275,23 +295,25 @@ button:disabled {
   width: 0%;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #22dcb5, #ffe080 55%, #ff6686);
-  box-shadow: 0 0 7px rgba(0, 234, 255, 0.34);
+  background: linear-gradient(90deg, #63e73b, #fff34f 58%, #ff9e27);
+  box-shadow: 0 0 7px rgba(255, 237, 86, 0.55);
   transition: width 0.2s ease;
 }
 
 .gem-legend {
   display: flex;
-  min-height: 30px;
+  min-height: 38px;
   align-items: center;
   justify-content: space-around;
-  padding: 4px 10px;
+  padding: 5px 14px;
+  border-width: 3px;
   border-radius: 999px;
+  background: linear-gradient(180deg, #0b66a8, #043f7e);
 }
 
 .legend-gem {
   display: block;
-  width: 18px;
+  width: 24px;
   aspect-ratio: 1;
   clip-path: polygon(50% 0, 88% 18%, 100% 58%, 72% 100%, 28% 100%, 0 58%, 12% 18%);
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.72));
@@ -329,17 +351,12 @@ button:disabled {
   min-height: 0;
   flex: 1 1 0;
   overflow: hidden;
-  place-items: center;
-  border-right: 1px solid rgba(214, 178, 94, 0.12);
-  border-left: 1px solid rgba(214, 178, 94, 0.12);
-  border-radius: 6px;
-  background:
-    linear-gradient(180deg, rgba(7, 25, 35, 0.9), rgba(2, 5, 11, 0.98) 22%, rgba(2, 5, 11, 0.98) 78%, rgba(18, 19, 24, 0.94)),
-    linear-gradient(90deg, rgba(214, 178, 94, 0.06), transparent 12%, transparent 88%, rgba(214, 178, 94, 0.06));
-  box-shadow:
-    inset 14px 0 22px -20px rgba(0, 234, 255, 0.34),
-    inset -14px 0 22px -20px rgba(0, 234, 255, 0.34);
-  filter: drop-shadow(0 5px 11px rgba(0, 0, 0, 0.58));
+  place-items: start center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  filter: none;
 }
 
 #game {
@@ -349,14 +366,14 @@ button:disabled {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  place-items: center;
+  place-items: start center;
 }
 
 canvas {
   display: block;
   max-width: 100%;
   max-height: 100%;
-  margin: auto;
+  margin: 0 auto !important;
   touch-action: none;
   user-select: none;
 }
@@ -364,39 +381,63 @@ canvas {
 .bottom-controls {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px;
+  gap: 7px;
 }
 
 .control-button {
   display: grid;
   min-width: 0;
-  min-height: 46px;
-  grid-template-columns: auto auto;
+  min-height: 64px;
+  grid-template-rows: 1fr auto;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 2px;
   overflow: hidden;
-  padding: 4px 6px;
-  border-radius: 8px;
+  padding: 5px 4px 6px;
+  border: 3px solid #ffd45b;
+  border-radius: 13px;
+  color: #fff;
   font-size: 13px;
   line-height: 1;
   text-overflow: ellipsis;
+  text-shadow: 0 2px 1px rgba(0, 35, 70, 0.72);
   white-space: nowrap;
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -5px 0 rgba(0, 37, 76, 0.26),
+    0 0 0 2px rgba(102, 55, 7, 0.86),
+    0 5px 9px rgba(0, 46, 67, 0.32);
 }
 
 .control-button::before {
   display: grid;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
   place-items: center;
-  color: var(--gold-light);
-  font-size: 18px;
+  color: #fff4a8;
+  font-size: 26px;
   line-height: 1;
-  text-shadow: 0 0 7px rgba(0, 234, 255, 0.25);
+  text-shadow: 0 2px 0 #75420b, 0 0 6px rgba(255, 240, 132, 0.5);
+}
+
+#hint-btn {
+  background: linear-gradient(180deg, #b440e8, #6415ac);
+}
+
+#shuffle-btn {
+  background: linear-gradient(180deg, #20bdec, #0875bf);
+}
+
+#pause-btn {
+  background: linear-gradient(180deg, #6fdc25, #269d13);
+}
+
+#sound-btn {
+  background: linear-gradient(180deg, #ffb52c, #ed7114);
 }
 
 #hint-btn::before {
-  content: "?";
+  content: "\1F4A1";
 }
 
 #shuffle-btn::before {
@@ -414,8 +455,8 @@ canvas {
 }
 
 #sound-btn.off {
-  color: rgba(255, 246, 220, 0.56);
-  background: linear-gradient(180deg, #101923, #05080d);
+  color: rgba(255, 255, 255, 0.72);
+  background: linear-gradient(180deg, #ba7f26, #8a4d16);
 }
 
 #combo-toast {
@@ -737,17 +778,23 @@ canvas {
   }
 
   .gem-legend {
-    min-height: 27px;
+    min-height: 32px;
     padding-top: 3px;
     padding-bottom: 3px;
   }
 
   .legend-gem {
-    width: 16px;
+    width: 20px;
   }
 
   .control-button {
-    min-height: 44px;
+    min-height: 52px;
+  }
+
+  .control-button::before {
+    width: 23px;
+    height: 23px;
+    font-size: 22px;
   }
 }
 
