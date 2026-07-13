@@ -1,5 +1,5 @@
-export type GemValue = -1 | 0 | 1 | 2 | 3 | 4 | 5;
-export type SpecialValue = 0 | 1 | 2;
+export type GemValue = -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type SpecialValue = 0 | 1 | 2 | 3;
 
 export type Cell = {
   row: number;

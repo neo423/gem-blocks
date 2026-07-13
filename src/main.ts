@@ -15,6 +15,8 @@ type UiState = {
   progress: number;
   audioEnabled: boolean;
   state: string;
+  nextGems: number[];
+  previewRevision: number;
   combo?: number;
   gained?: number;
 };
@@ -36,6 +38,8 @@ const ui = {
   tier: document.querySelector<HTMLSpanElement>("#ui-tier")!,
   best: document.querySelector<HTMLSpanElement>("#ui-best")!,
   progress: document.querySelector<HTMLDivElement>("#ui-progress")!,
+  legend: document.querySelector<HTMLElement>(".gem-legend")!,
+  previewSlots: [...document.querySelectorAll<HTMLElement>("[data-preview-slot]")],
   combo: document.querySelector<HTMLDivElement>("#combo-toast")!,
   hint: document.querySelector<HTMLButtonElement>("#hint-btn")!,
   shuffle: document.querySelector<HTMLButtonElement>("#shuffle-btn")!,
@@ -52,6 +56,7 @@ const ui = {
 };
 
 let overlayMode: OverlayState["mode"] = "menu";
+let renderedPreviewRevision = -1;
 
 function syncAppHeight() {
   const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
@@ -125,6 +130,20 @@ function updateUi(state: UiState) {
   ui.sound.textContent = state.audioEnabled ? "音樂 開" : "音樂 關";
   ui.sound.classList.toggle("off", !state.audioEnabled);
   ui.sound.setAttribute("aria-pressed", String(state.audioEnabled));
+
+  state.nextGems.forEach((gem, index) => {
+    const slot = ui.previewSlots[index];
+    if (slot) slot.dataset.gem = String(gem);
+  });
+  if (state.previewRevision !== renderedPreviewRevision) {
+    renderedPreviewRevision = state.previewRevision;
+    ui.legend.classList.remove("is-refilling");
+    void ui.legend.offsetWidth;
+    ui.legend.classList.add("is-refilling");
+    window.setTimeout(() => {
+      if (renderedPreviewRevision === state.previewRevision) ui.legend.classList.remove("is-refilling");
+    }, 760);
+  }
 
   if (state.gained) {
     ui.combo.textContent = state.combo && state.combo > 1 ? `連鎖 x${state.combo}  +${state.gained}` : `+${state.gained}`;

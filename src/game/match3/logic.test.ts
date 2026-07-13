@@ -10,9 +10,18 @@ import {
   makeBoard,
   planMatches,
   skinTierForLevel,
-  swapWouldMatch
+  swapWouldMatch,
+  ultimateSwapRemoval
 } from "./logic";
-import { BOARD_COLS, BOARD_ROWS, EMPTY_GEM, SPECIAL_BOMB, SPECIAL_LINE, SPECIAL_NONE } from "./balance";
+import {
+  BOARD_COLS,
+  BOARD_ROWS,
+  EMPTY_GEM,
+  SPECIAL_COLUMN,
+  SPECIAL_NONE,
+  SPECIAL_ROW,
+  SPECIAL_ULTIMATE
+} from "./balance";
 import type { Board } from "./types";
 
 describe("match-3 logic", () => {
@@ -40,8 +49,8 @@ describe("match-3 logic", () => {
     );
   });
 
-  test("creates bomb gems from four-runs and line gems from five-runs", () => {
-    const bombPlan = planMatches([
+  test("creates directional gems from four-runs and an ultimate gem from five-runs", () => {
+    const horizontalPlan = planMatches([
       {
         direction: "horizontal",
         length: 4,
@@ -53,7 +62,19 @@ describe("match-3 logic", () => {
         ]
       }
     ]);
-    const linePlan = planMatches([
+    const verticalPlan = planMatches([
+      {
+        direction: "vertical",
+        length: 4,
+        cells: [
+          { row: 0, col: 1 },
+          { row: 1, col: 1 },
+          { row: 2, col: 1 },
+          { row: 3, col: 1 }
+        ]
+      }
+    ]);
+    const ultimatePlan = planMatches([
       {
         direction: "vertical",
         length: 5,
@@ -67,20 +88,57 @@ describe("match-3 logic", () => {
       }
     ]);
 
-    expect(bombPlan.creations).toEqual([{ row: 0, col: 2, special: SPECIAL_BOMB }]);
-    expect(linePlan.creations).toEqual([{ row: 2, col: 4, special: SPECIAL_LINE }]);
+    expect(horizontalPlan.creations).toEqual([{ row: 0, col: 2, special: SPECIAL_ROW }]);
+    expect(verticalPlan.creations).toEqual([{ row: 2, col: 1, special: SPECIAL_COLUMN }]);
+    expect(ultimatePlan.creations).toEqual([{ row: 2, col: 4, special: SPECIAL_ULTIMATE }]);
   });
 
-  test("expands bomb and line special removals", () => {
+  test("expands directional special removals and chains through another special", () => {
     const specials = createEmptySpecialBoard();
-    specials[2][2] = SPECIAL_BOMB;
-    specials[5][5] = SPECIAL_LINE;
+    specials[2][2] = SPECIAL_ROW;
+    specials[2][5] = SPECIAL_COLUMN;
 
-    const bombRemoval = expandRemoval(new Set([cellKey({ row: 2, col: 2 })]), new Set(), specials);
-    const lineRemoval = expandRemoval(new Set([cellKey({ row: 5, col: 5 })]), new Set(), specials);
+    const removal = expandRemoval(new Set([cellKey({ row: 2, col: 2 })]), new Set(), specials);
 
-    expect(bombRemoval.size).toBe(9);
-    expect(lineRemoval.size).toBe(BOARD_ROWS + BOARD_COLS - 1);
+    expect(removal.size).toBe(BOARD_COLS + BOARD_ROWS - 1);
+    expect(removal).toContain(cellKey({ row: 2, col: 0 }));
+    expect(removal).toContain(cellKey({ row: 9, col: 5 }));
+  });
+
+  test("ultimate swaps clear every gem matching the target color", () => {
+    const board: Board = [
+      [6, 1, 2, 3, 4, 5, 0, 1],
+      [1, 2, 3, 4, 5, 0, 1, 2],
+      [2, 3, 4, 5, 0, 1, 2, 3],
+      [3, 4, 5, 0, 1, 2, 3, 4],
+      [4, 5, 0, 1, 2, 3, 4, 5],
+      [5, 0, 1, 2, 3, 4, 5, 0],
+      [0, 1, 2, 3, 4, 5, 0, 1],
+      [1, 2, 3, 4, 5, 0, 1, 2],
+      [2, 3, 4, 5, 0, 1, 2, 3],
+      [3, 4, 5, 0, 1, 2, 3, 4]
+    ];
+    const specials = createEmptySpecialBoard();
+    specials[0][0] = SPECIAL_ULTIMATE;
+
+    const removal = ultimateSwapRemoval(board, specials, { row: 0, col: 0 }, { row: 0, col: 1 });
+    const yellowCount = board.flat().filter((value) => value === 1).length;
+
+    expect(removal?.size).toBe(yellowCount + 1);
+    expect(removal).toContain(cellKey({ row: 0, col: 0 }));
+    expect(removal).toContain(cellKey({ row: 6, col: 1 }));
+    expect(removal).not.toContain(cellKey({ row: 0, col: 2 }));
+  });
+
+  test("swapping two ultimate gems clears the entire board", () => {
+    const board = makeBoard(() => 0.42);
+    const specials = createEmptySpecialBoard();
+    specials[0][0] = SPECIAL_ULTIMATE;
+    specials[0][1] = SPECIAL_ULTIMATE;
+
+    const removal = ultimateSwapRemoval(board, specials, { row: 0, col: 0 }, { row: 0, col: 1 });
+
+    expect(removal?.size).toBe(BOARD_ROWS * BOARD_COLS);
   });
 
   test("applies gravity and refills empty cells from the top", () => {
@@ -110,14 +168,14 @@ describe("match-3 logic", () => {
     const board = makeBoard(() => 0.42);
     const specials = createEmptySpecialBoard();
     board[8][0] = EMPTY_GEM;
-    specials[7][0] = SPECIAL_BOMB;
+    specials[7][0] = SPECIAL_ROW;
 
     const plan = applyGravityWithPlan(board, specials, () => 4);
 
     expect(plan.spawns).toEqual([{ cell: { row: 0, col: 0 }, value: 4 }]);
     expect(plan.moves.every((move) => move.from.col === 0 && move.to.col === 0)).toBe(true);
     expect(plan.moves).toContainEqual({ from: { row: 7, col: 0 }, to: { row: 8, col: 0 } });
-    expect(specials[8][0]).toBe(SPECIAL_BOMB);
+    expect(specials[8][0]).toBe(SPECIAL_ROW);
     expect(specials[7][0]).toBe(SPECIAL_NONE);
   });
 

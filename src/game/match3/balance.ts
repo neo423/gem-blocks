@@ -5,10 +5,12 @@ export const BOARD_COLS = 8;
 export const BOARD_SIZE = BOARD_COLS;
 export const GEM_COLORS = 6;
 export const EMPTY_GEM = -1;
+export const ULTIMATE_GEM = 6;
 
 export const SPECIAL_NONE = 0;
-export const SPECIAL_BOMB = 1;
-export const SPECIAL_LINE = 2;
+export const SPECIAL_ROW = 1;
+export const SPECIAL_COLUMN = 2;
+export const SPECIAL_ULTIMATE = 3;
 
 export const SHUFFLES_PER_LEVEL = 3;
 export const BASE_LEVEL_TIME_SECONDS = 150;

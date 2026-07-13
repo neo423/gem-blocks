@@ -6,9 +6,12 @@ import {
   EMPTY_GEM,
   scoreForRemoval,
   SHUFFLES_PER_LEVEL,
-  SPECIAL_BOMB,
+  SPECIAL_COLUMN,
   SPECIAL_NONE,
-  targetForLevel
+  SPECIAL_ROW,
+  SPECIAL_ULTIMATE,
+  targetForLevel,
+  ULTIMATE_GEM
 } from "./balance";
 import { GemAudio } from "./audio";
 import { removalFxPlan, type RemovalFxPlan } from "./fx";
@@ -28,9 +31,11 @@ import {
   shuffleBoard,
   skinTierForLevel,
   swapCells,
+  ultimateSwapRemoval,
   type GravityPlan
 } from "./logic";
-import { createGemTextures, gemDisplayName, gemTextureKey, GEM_TEXTURE_SIZE } from "./gemArt";
+import { createGemTextures, gemTextureKey, GEM_TEXTURE_SIZE } from "./gemArt";
+import { GemRefillQueue } from "./refillQueue";
 import type { Board, Cell, GemValue, SkinTier, SpecialBoard } from "./types";
 
 type PlayState = "menu" | "playing" | "busy" | "paused" | "over";
@@ -39,7 +44,6 @@ type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 560;
 const HEIGHT = 700;
-const STAGE_FOOTER_HEIGHT = 29;
 const GEM_SIZE = 56;
 const GAP = 6;
 const BOARD_PAD = 16;
@@ -49,6 +53,7 @@ const BOARD_PIXEL_HEIGHT = BOARD_ROWS * GEM_SIZE + (BOARD_ROWS - 1) * GAP;
 const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
 const BOARD_Y = 41;
 const SAVE_KEY = "gem-blocks-save-v1";
+const GEM_ATLAS_KEY = "gem-atlas";
 
 export class Match3Scene extends Phaser.Scene {
   private board: Board = makeBoard();
@@ -72,6 +77,7 @@ export class Match3Scene extends Phaser.Scene {
   private bestScore = 0;
   private bestLevel = 1;
   private audio = new GemAudio();
+  private refillQueue = new GemRefillQueue();
   private actionHandler = (event: Event) => {
     this.handleUiAction((event as CustomEvent<UiAction>).detail);
   };
@@ -80,10 +86,14 @@ export class Match3Scene extends Phaser.Scene {
     super("Match3Scene");
   }
 
+  preload() {
+    this.load.image("gem-atlas", "/assets/gems/gem-atlas.png");
+  }
+
   create() {
     this.loadBest();
-    this.cameras.main.setBackgroundColor("#090a12");
-    this.drawBackground();
+    this.createGemAtlasFrames();
+    this.cameras.main.setBackgroundColor("rgba(0,0,0,0)");
     this.drawBoardFrame();
     this.createBoardInputZone();
     this.resetLevel(1, false);
@@ -152,6 +162,7 @@ export class Match3Scene extends Phaser.Scene {
     createGemTextures(this, this.tier);
     this.board = makeBoard();
     this.specials = createEmptySpecialBoard();
+    this.refillQueue = new GemRefillQueue();
     this.selected = undefined;
     this.pendingSwap = [];
     this.clearTimer();
@@ -170,21 +181,23 @@ export class Match3Scene extends Phaser.Scene {
     this.state = "menu";
   }
 
-  private drawBackground() {
-    const g = this.add.graphics();
-    g.fillStyle(0x063967);
-    g.fillRect(0, 0, WIDTH, HEIGHT);
-    g.fillStyle(0x0b6ca7, 0.96);
-    g.fillRect(0, 0, WIDTH, 74);
-    g.fillStyle(0x075481, 0.98);
-    g.fillRect(0, HEIGHT - STAGE_FOOTER_HEIGHT, WIDTH, STAGE_FOOTER_HEIGHT);
-    g.lineStyle(2, 0xffd65a, 0.72);
-    g.lineBetween(0, HEIGHT - STAGE_FOOTER_HEIGHT + 1, WIDTH, HEIGHT - STAGE_FOOTER_HEIGHT + 1);
-
-    for (let i = 0; i < 18; i += 1) {
-      const x = 22 + i * 40;
-      g.fillStyle(i % 2 === 0 ? 0x1e78b0 : 0x35c6da, 0.13);
-      g.fillRect(x, 86 + (i % 4) * 118, 24, 64);
+  private createGemAtlasFrames() {
+    const texture = this.textures.get(GEM_ATLAS_KEY);
+    if (!texture || texture.has("gem-0")) {
+      return;
+    }
+    const source = texture.getSourceImage() as { width: number; height: number };
+    const frameWidth = Math.floor(source.width / 3);
+    const frameHeight = Math.floor(source.height / 3);
+    for (let value = 0; value <= ULTIMATE_GEM; value += 1) {
+      texture.add(
+        `gem-${value}`,
+        0,
+        (value % 3) * frameWidth,
+        Math.floor(value / 3) * frameHeight,
+        frameWidth,
+        frameHeight
+      );
     }
   }
 
@@ -254,7 +267,11 @@ export class Match3Scene extends Phaser.Scene {
     container.setData("col", cell.col);
 
     const halo = this.add.circle(0, 2, GEM_SIZE * 0.45, this.tier.rimLight, 0.07);
-    const gem = this.add.image(0, 0, gemTextureKey(this.tier.key, value));
+    const frame = `gem-${value}`;
+    const useAtlas = this.tier.key === "classic" && this.textures.get(GEM_ATLAS_KEY).has(frame);
+    const gem = useAtlas
+      ? this.add.image(0, 0, "gem-atlas", frame)
+      : this.add.image(0, 0, gemTextureKey(this.tier.key, value));
     gem.setDisplaySize(GEM_TEXTURE_SIZE * 0.78, GEM_TEXTURE_SIZE * 0.78);
     container.add([halo, gem]);
     this.addSpecialBadge(container, this.specials[cell.row][cell.col]);
@@ -282,17 +299,22 @@ export class Match3Scene extends Phaser.Scene {
     if (special === SPECIAL_NONE) {
       return;
     }
-    const color = special === SPECIAL_BOMB ? 0xffd166 : 0x8ff7ff;
-    const badge = this.add.circle(19, 19, 13, color, 0.94);
-    badge.setStrokeStyle(3, 0x111322, 0.9);
-    const label = this.add.text(19, 19, special === SPECIAL_BOMB ? "B" : "+", {
-      fontFamily: "Trebuchet MS, Microsoft JhengHei, sans-serif",
-      fontSize: special === SPECIAL_BOMB ? "15px" : "19px",
-      fontStyle: "bold",
-      color: "#111322"
-    });
-    label.setOrigin(0.5);
-    container.add([badge, label]);
+    if (special === SPECIAL_ROW || special === SPECIAL_COLUMN) {
+      const horizontal = special === SPECIAL_ROW;
+      const glow = this.add.rectangle(0, 0, horizontal ? 66 : 11, horizontal ? 11 : 66, 0xffffff, 0.62);
+      glow.setStrokeStyle(3, 0x8ff7ff, 0.92);
+      const core = this.add.rectangle(0, 0, horizontal ? 58 : 4, horizontal ? 4 : 58, 0xffffff, 0.96);
+      container.add([glow, core]);
+      this.tweens.add({ targets: glow, alpha: 0.24, yoyo: true, repeat: -1, duration: 460, ease: "Sine.easeInOut" });
+      return;
+    }
+
+    const outer = this.add.circle(0, 0, 38);
+    outer.setStrokeStyle(4, 0xffffff, 0.9);
+    const inner = this.add.circle(0, 0, 30);
+    inner.setStrokeStyle(3, 0x8ff7ff, 0.78);
+    container.add([outer, inner]);
+    this.tweens.add({ targets: outer, angle: 360, duration: 1800, repeat: -1 });
   }
 
   private onBoardPointerDown(pointer: Phaser.Input.Pointer) {
@@ -340,7 +362,8 @@ export class Match3Scene extends Phaser.Scene {
     if (this.state !== "playing") {
       return;
     }
-    if (!this.selected && this.specials[cell.row][cell.col] !== SPECIAL_NONE) {
+    const tappedSpecial = this.specials[cell.row][cell.col];
+    if (!this.selected && tappedSpecial !== SPECIAL_NONE && tappedSpecial !== SPECIAL_ULTIMATE) {
       this.detonateSpecial(cell);
       return;
     }
@@ -402,6 +425,11 @@ export class Match3Scene extends Phaser.Scene {
       swapCells(this.board, a, b);
       swapCells(this.specials, a, b);
       this.swapGemContainers(a, b);
+      const ultimateRemoval = ultimateSwapRemoval(this.board, this.specials, a, b);
+      if (ultimateRemoval) {
+        this.resolveUltimateSwap(ultimateRemoval, a, b);
+        return;
+      }
       if (anyMatch(this.board)) {
         this.resolveBoard(1);
         return;
@@ -452,11 +480,87 @@ export class Match3Scene extends Phaser.Scene {
     this.gems.set(keyB, gemA);
   }
 
+  private resolveUltimateSwap(initialRemoval: Set<number>, a: Cell, b: Cell) {
+    this.pendingSwap = [];
+    const aIsUltimate = this.specials[a.row][a.col] === SPECIAL_ULTIMATE;
+    const bIsUltimate = this.specials[b.row][b.col] === SPECIAL_ULTIMATE;
+    const source = aIsUltimate ? a : b;
+    const target = aIsUltimate ? b : a;
+    const targetValue = aIsUltimate && bIsUltimate ? ULTIMATE_GEM : this.board[target.row][target.col];
+
+    const chainSpecials = this.specials.map((row) => [...row]) as SpecialBoard;
+    chainSpecials[a.row][a.col] = aIsUltimate ? SPECIAL_NONE : chainSpecials[a.row][a.col];
+    chainSpecials[b.row][b.col] = bIsUltimate ? SPECIAL_NONE : chainSpecials[b.row][b.col];
+    const removeSet = expandRemoval(initialRemoval, new Set(), chainSpecials);
+    const fxPlan = removalFxPlan(removeSet.size, 2);
+    const gained = scoreForRemoval(removeSet.size, 1);
+
+    this.levelScore += gained;
+    this.totalScore += gained;
+    this.updateBest(false);
+    this.updateUi({ combo: 1, gained });
+    this.animateColorLightning(source, removeSet, targetValue);
+    this.time.delayedCall(110, () => {
+      this.animateRemoval(removeSet, fxPlan, 2, () => this.settleAfterRemoval(removeSet, 2));
+    });
+  }
+
+  private animateColorLightning(source: Cell, removeSet: Set<number>, value: GemValue) {
+    const origin = this.cellToWorld(source);
+    const color = this.colorForGem(value);
+    const lightning = this.add.graphics().setDepth(92);
+    lightning.lineStyle(5, color, 0.95);
+
+    removeSet.forEach((key) => {
+      const target = this.cellToWorld(cellFromKey(key));
+      if (target.x === origin.x && target.y === origin.y) {
+        return;
+      }
+      const midX = (origin.x + target.x) / 2 + Phaser.Math.Between(-12, 12);
+      const midY = (origin.y + target.y) / 2 + Phaser.Math.Between(-12, 12);
+      lightning.beginPath();
+      lightning.moveTo(origin.x, origin.y);
+      lightning.lineTo(midX, midY);
+      lightning.lineTo(target.x, target.y);
+      lightning.strokePath();
+    });
+
+    this.tweens.add({
+      targets: lightning,
+      alpha: 0,
+      duration: 280,
+      ease: "Cubic.easeOut",
+      onComplete: () => lightning.destroy()
+    });
+  }
+
+  private findPlayableHint(): [Cell, Cell] | null {
+    for (let row = 0; row < BOARD_ROWS; row += 1) {
+      for (let col = 0; col < BOARD_COLS; col += 1) {
+        if (this.specials[row][col] !== SPECIAL_ULTIMATE) {
+          continue;
+        }
+        const source = { row, col };
+        const neighbors = [
+          { row, col: col + 1 },
+          { row: row + 1, col },
+          { row, col: col - 1 },
+          { row: row - 1, col }
+        ];
+        const target = neighbors.find((cell) => this.isValidCell(cell) && this.board[cell.row][cell.col] !== EMPTY_GEM);
+        if (target) {
+          return [source, target];
+        }
+      }
+    }
+    return findHint(this.board);
+  }
+
   private resolveBoard(combo: number) {
     const runs = findRuns(this.board);
     if (runs.length === 0) {
       this.pendingSwap = [];
-      if (!findHint(this.board)) {
+      if (!this.findPlayableHint()) {
         shuffleBoard(this.board, this.specials);
         this.audio.playShuffle();
         this.renderBoard({ dropIn: true });
@@ -473,7 +577,7 @@ export class Match3Scene extends Phaser.Scene {
     const plan = planMatches(runs, combo === 1 ? this.pendingSwap : []);
     const removeSet = expandRemoval(plan.matched, plan.creationKeys, this.specials);
     const fxPlan = removalFxPlan(removeSet.size, combo);
-    const gained = scoreForRemoval(removeSet.size, combo);
+    const gained = scoreForRemoval(removeSet.size + plan.creations.length, combo);
     this.levelScore += gained;
     this.totalScore += gained;
     this.updateBest(false);
@@ -481,7 +585,15 @@ export class Match3Scene extends Phaser.Scene {
 
     plan.creations.forEach((creation) => {
       this.specials[creation.row][creation.col] = creation.special;
-      this.pulseCell(creation, creation.special === SPECIAL_BOMB ? 0xffd166 : 0x8ff7ff);
+      if (creation.special === SPECIAL_ULTIMATE) {
+        this.board[creation.row][creation.col] = ULTIMATE_GEM;
+      }
+      const key = cellKey(creation);
+      this.gems.get(key)?.destroy();
+      this.gems.delete(key);
+      this.createGem(creation, this.board[creation.row][creation.col]);
+      const pulseColor = creation.special === SPECIAL_ULTIMATE ? 0xffffff : 0x8ff7ff;
+      this.pulseCell(creation, pulseColor);
     });
 
     this.animateRemoval(removeSet, fxPlan, combo, () => {
@@ -547,7 +659,8 @@ export class Match3Scene extends Phaser.Scene {
       this.specials[cell.row][cell.col] = SPECIAL_NONE;
     });
 
-    const gravityPlan = applyGravityWithPlan(this.board, this.specials, () => Math.floor(Math.random() * 6) as GemValue);
+    const gravityPlan = applyGravityWithPlan(this.board, this.specials, () => this.refillQueue.next());
+    this.updateUi();
     this.animateGravity(gravityPlan, () => {
       this.time.delayedCall(80, () => this.resolveBoard(nextCombo));
     });
@@ -615,7 +728,8 @@ export class Match3Scene extends Phaser.Scene {
   }
 
   private detonateSpecial(cell: Cell) {
-    if (this.state !== "playing" || this.specials[cell.row][cell.col] === SPECIAL_NONE) {
+    const special = this.specials[cell.row][cell.col];
+    if (this.state !== "playing" || special === SPECIAL_NONE || special === SPECIAL_ULTIMATE) {
       return;
     }
     this.state = "busy";
@@ -638,7 +752,7 @@ export class Match3Scene extends Phaser.Scene {
     }
     this.audio.playHint();
     this.clearHint();
-    const hint = findHint(this.board);
+    const hint = this.findPlayableHint();
     if (!hint) {
       return;
     }
@@ -966,7 +1080,8 @@ export class Match3Scene extends Phaser.Scene {
           audioEnabled: this.audio.enabled,
           state: this.state,
           progress: Math.min(1, this.levelScore / this.target),
-          nextGem: gemDisplayName(this.tier.key, 0),
+          nextGems: this.refillQueue.preview(),
+          previewRevision: this.refillQueue.revision,
           ...extra
         }
       })
@@ -1041,7 +1156,8 @@ export const MATCH3_GAME_CONFIG: Phaser.Types.Core.GameConfig = {
   parent: "game",
   width: WIDTH,
   height: HEIGHT,
-  backgroundColor: "#090a12",
+  backgroundColor: "rgba(0,0,0,0)",
+  transparent: true,
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH

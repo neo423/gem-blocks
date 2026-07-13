@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GEM_COLORS } from "./balance";
+import { GEM_COLORS, ULTIMATE_GEM } from "./balance";
 import type { GemValue, SkinTier, SkinTierKey } from "./types";
 
 type GemShape = "brilliant" | "emerald" | "kite" | "marquise" | "shield" | "trillion";
@@ -52,6 +52,9 @@ export function gemTextureKey(tier: SkinTierKey, gem: GemValue) {
 }
 
 export function gemDisplayName(tier: SkinTierKey, gem: GemValue) {
+  if (gem === ULTIMATE_GEM) {
+    return "終極星鑽";
+  }
   return MATERIALS[tier][gem]?.name ?? "未知寶石";
 }
 
@@ -63,6 +66,38 @@ export function createGemTextures(scene: Phaser.Scene, tier: SkinTier) {
       drawGemTexture(scene, key, materials[index], tier);
     }
   }
+  const ultimateKey = gemTextureKey(tier.key, ULTIMATE_GEM);
+  if (!scene.textures.exists(ultimateKey)) {
+    drawUltimateTexture(scene, ultimateKey, tier);
+  }
+}
+
+function drawUltimateTexture(scene: Phaser.Scene, key: string, tier: SkinTier) {
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  const center = GEM_TEXTURE_SIZE / 2;
+  const points = shapePoints("brilliant", center, center);
+  const colors = [0xff477e, 0xffd166, 0x27e6b1, 0x35b9ff, 0xa855f7, 0xf7fdff];
+
+  g.fillStyle(0x000000, 0.42);
+  g.fillEllipse(center + 2, center + 15, 70, 22);
+  g.fillStyle(0xeefaff, 0.98);
+  g.lineStyle(5, 0x5f3bc5, 0.96);
+  g.fillPoints(points, true);
+  g.strokePoints(points, true);
+  points.forEach((point, index) => {
+    const next = points[(index + 1) % points.length];
+    g.fillStyle(colors[index % colors.length], 0.66);
+    g.fillPoints([point, next, new Phaser.Math.Vector2(center, center + 2)], true);
+  });
+  g.fillStyle(0xffffff, 0.72);
+  g.fillCircle(center, center, 15);
+  g.lineStyle(3, 0xffffff, 0.86);
+  g.strokeCircle(center, center, 37 + tier.sparkle * 2);
+  g.lineStyle(2, 0x8ff7ff, 0.74);
+  g.strokeCircle(center, center, 42);
+  drawGlints(g, center, center, tier);
+  g.generateTexture(key, GEM_TEXTURE_SIZE, GEM_TEXTURE_SIZE);
+  g.destroy();
 }
 
 function drawGemTexture(scene: Phaser.Scene, key: string, material: GemMaterial, tier: SkinTier) {

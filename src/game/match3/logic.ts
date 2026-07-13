@@ -4,9 +4,11 @@ import {
   EMPTY_GEM,
   GEM_COLORS,
   SKIN_TIERS,
-  SPECIAL_BOMB,
-  SPECIAL_LINE,
-  SPECIAL_NONE
+  SPECIAL_COLUMN,
+  SPECIAL_NONE,
+  SPECIAL_ROW,
+  SPECIAL_ULTIMATE,
+  ULTIMATE_GEM
 } from "./balance";
 import type { Board, Cell, GemValue, MatchPlan, MatchRun, SkinTier, SpecialBoard, SpecialValue } from "./types";
 
@@ -57,7 +59,7 @@ export function findRuns(board: Board): MatchRun[] {
     let col = 0;
     while (col < BOARD_COLS) {
       const value = board[row][col];
-      if (value === EMPTY_GEM) {
+      if (value === EMPTY_GEM || value === ULTIMATE_GEM) {
         col += 1;
         continue;
       }
@@ -82,7 +84,7 @@ export function findRuns(board: Board): MatchRun[] {
     let row = 0;
     while (row < BOARD_ROWS) {
       const value = board[row][col];
-      if (value === EMPTY_GEM) {
+      if (value === EMPTY_GEM || value === ULTIMATE_GEM) {
         row += 1;
         continue;
       }
@@ -174,7 +176,7 @@ export function planMatches(runs: MatchRun[], swapCellsForCreation: Cell[] = [])
     creationKeys.add(key);
     creations.push({
       ...creationCell,
-      special: run.length >= 5 ? SPECIAL_LINE : SPECIAL_BOMB
+      special: run.length >= 5 ? SPECIAL_ULTIMATE : run.direction === "horizontal" ? SPECIAL_ROW : SPECIAL_COLUMN
     });
   });
 
@@ -207,23 +209,23 @@ export function expandRemoval(matched: Set<number>, creationKeys: Set<number>, s
     const special = specials[row][col];
     const affected: number[] = [];
 
-    if (special === SPECIAL_BOMB) {
-      for (let rowOffset = -1; rowOffset <= 1; rowOffset += 1) {
-        for (let colOffset = -1; colOffset <= 1; colOffset += 1) {
-          const cell = { row: row + rowOffset, col: col + colOffset };
-          if (isInside(cell)) {
-            affected.push(cellKey(cell));
-          }
-        }
-      }
-    }
-
-    if (special === SPECIAL_LINE) {
+    if (special === SPECIAL_ROW) {
       for (let lineCol = 0; lineCol < BOARD_COLS; lineCol += 1) {
         affected.push(cellKey({ row, col: lineCol }));
       }
+    }
+
+    if (special === SPECIAL_COLUMN) {
       for (let lineRow = 0; lineRow < BOARD_ROWS; lineRow += 1) {
         affected.push(cellKey({ row: lineRow, col }));
+      }
+    }
+
+    if (special === SPECIAL_ULTIMATE) {
+      for (let boardRow = 0; boardRow < BOARD_ROWS; boardRow += 1) {
+        for (let boardCol = 0; boardCol < BOARD_COLS; boardCol += 1) {
+          affected.push(cellKey({ row: boardRow, col: boardCol }));
+        }
       }
     }
 
@@ -239,6 +241,37 @@ export function expandRemoval(matched: Set<number>, creationKeys: Set<number>, s
     });
   }
 
+  return remove;
+}
+
+export function ultimateSwapRemoval(board: Board, specials: SpecialBoard, a: Cell, b: Cell) {
+  const aIsUltimate = specials[a.row][a.col] === SPECIAL_ULTIMATE;
+  const bIsUltimate = specials[b.row][b.col] === SPECIAL_ULTIMATE;
+  if (!aIsUltimate && !bIsUltimate) {
+    return null;
+  }
+
+  const remove = new Set<number>();
+  if (aIsUltimate && bIsUltimate) {
+    for (let row = 0; row < BOARD_ROWS; row += 1) {
+      for (let col = 0; col < BOARD_COLS; col += 1) {
+        remove.add(cellKey({ row, col }));
+      }
+    }
+    return remove;
+  }
+
+  const ultimateCell = aIsUltimate ? a : b;
+  const targetCell = aIsUltimate ? b : a;
+  const targetValue = board[targetCell.row][targetCell.col];
+  remove.add(cellKey(ultimateCell));
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
+    for (let col = 0; col < BOARD_COLS; col += 1) {
+      if (board[row][col] === targetValue) {
+        remove.add(cellKey({ row, col }));
+      }
+    }
+  }
   return remove;
 }
 

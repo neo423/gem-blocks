@@ -313,34 +313,59 @@ button:disabled {
 
 .legend-gem {
   display: block;
-  width: 24px;
+  width: 34px;
   aspect-ratio: 1;
-  clip-path: polygon(50% 0, 88% 18%, 100% 58%, 72% 100%, 28% 100%, 0 58%, 12% 18%);
+  background-image: url("/assets/gems/gem-atlas.png");
+  background-repeat: no-repeat;
+  background-size: 300% 300%;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.72));
+  animation: preview-gem-float 2.2s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
-.legend-ruby {
-  background: linear-gradient(135deg, #fff 0 8%, #ff7897 12% 31%, #b50f42 58%, #ff9eb4 74%, #5e092b);
+.legend-gem[data-gem="0"] {
+  background-position: 0% 0%;
 }
 
-.legend-gold {
-  background: linear-gradient(135deg, #fff8ba 0 8%, #ffd450 13% 31%, #a86d0b 58%, #ffe48e 74%, #5b3908);
+.legend-gem[data-gem="1"] {
+  background-position: 50% 0%;
 }
 
-.legend-emerald {
-  background: linear-gradient(135deg, #f0fff8 0 8%, #50e4bd 13% 31%, #087c67 58%, #77f9d7 74%, #03443c);
+.legend-gem[data-gem="2"] {
+  background-position: 100% 0%;
 }
 
-.legend-sapphire {
-  background: linear-gradient(135deg, #e9f9ff 0 8%, #58bfff 13% 31%, #175fb3 58%, #a0dcff 74%, #09296a);
+.legend-gem[data-gem="3"] {
+  background-position: 0% 50%;
 }
 
-.legend-amethyst {
-  background: linear-gradient(135deg, #f9ddff 0 8%, #bd68ec 13% 31%, #64219c 58%, #e29cff 74%, #35105a);
+.legend-gem[data-gem="4"] {
+  background-position: 50% 50%;
 }
 
-.legend-diamond {
-  background: linear-gradient(135deg, #fff 0 8%, #d8eef1 13% 31%, #78959e 58%, #f7ffff 74%, #40545c);
+.legend-gem[data-gem="5"] {
+  background-position: 100% 50%;
+}
+
+.gem-legend.is-refilling .legend-gem {
+  animation: preview-gem-drop 0.56s cubic-bezier(0.2, 0.9, 0.28, 1.18) both;
+}
+
+.gem-legend.is-refilling .legend-gem:nth-child(2) { animation-delay: 35ms; }
+.gem-legend.is-refilling .legend-gem:nth-child(3) { animation-delay: 70ms; }
+.gem-legend.is-refilling .legend-gem:nth-child(4) { animation-delay: 105ms; }
+.gem-legend.is-refilling .legend-gem:nth-child(5) { animation-delay: 140ms; }
+.gem-legend.is-refilling .legend-gem:nth-child(6) { animation-delay: 175ms; }
+
+@keyframes preview-gem-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-2px) rotate(2deg); }
+}
+
+@keyframes preview-gem-drop {
+  0% { opacity: 0; transform: translateY(-24px) scale(0.66) rotate(-14deg); }
+  68% { opacity: 1; transform: translateY(3px) scale(1.08) rotate(3deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
 }
 
 #game-wrap {
@@ -349,7 +374,8 @@ button:disabled {
   width: min(100%, 560px);
   min-width: 0;
   min-height: 0;
-  flex: 1 1 0;
+  aspect-ratio: 560 / 700;
+  flex: none;
   overflow: hidden;
   place-items: start center;
   border: 0;
@@ -385,6 +411,7 @@ canvas {
 }
 
 .control-button {
+  position: relative;
   display: grid;
   min-width: 0;
   min-height: 64px;
@@ -392,7 +419,7 @@ canvas {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  overflow: hidden;
+  overflow: visible;
   padding: 5px 4px 6px;
   border: 3px solid #ffd45b;
   border-radius: 13px;
@@ -407,6 +434,36 @@ canvas {
     inset 0 -5px 0 rgba(0, 37, 76, 0.26),
     0 0 0 2px rgba(102, 55, 7, 0.86),
     0 5px 9px rgba(0, 46, 67, 0.32);
+}
+
+.control-button::after {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #fff0a0;
+  background: linear-gradient(135deg, #ffffff 0 9%, #ff6c8e 16% 42%, #a90f43 62%, #ffb2c2 78%, #63102f);
+  box-shadow: 0 0 0 2px #a45e0e, 0 3px 7px rgba(0, 34, 65, 0.46);
+  content: "";
+  clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
+  transform: translateX(-50%);
+}
+
+#hint-btn::after {
+  background: linear-gradient(135deg, #fff 0 8%, #d96cff 18% 43%, #7513bd 64%, #eea4ff 80%, #45106f);
+}
+
+#shuffle-btn::after {
+  background: linear-gradient(135deg, #fff 0 8%, #70e4ff 18% 43%, #0878c8 64%, #9bf0ff 80%, #074675);
+}
+
+#pause-btn::after {
+  background: linear-gradient(135deg, #fff 0 8%, #9bff5e 18% 43%, #2a9f18 64%, #c3ff8a 80%, #17630f);
+}
+
+#sound-btn::after {
+  background: linear-gradient(135deg, #fff 0 8%, #ffe36c 18% 43%, #ed8611 64%, #fff1a1 80%, #9d4f08);
 }
 
 .control-button::before {
@@ -752,6 +809,10 @@ canvas {
     gap: 4px;
   }
 
+  #game-wrap {
+    width: min(100%, calc(80dvh - 178px));
+  }
+
   .hud-data-panel {
     gap: 3px;
     padding: 4px;
@@ -784,7 +845,7 @@ canvas {
   }
 
   .legend-gem {
-    width: 20px;
+    width: 28px;
   }
 
   .control-button {
