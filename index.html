@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#159ed9" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/assets/gem-blocks-app-icon.png" />
     <link rel="icon" type="image/png" href="/assets/gem-blocks-app-icon.png" />
     <title>寶石方塊</title>
@@ -64,10 +63,10 @@
       </section>
 
       <section id="controls" class="bottom-controls" aria-label="控制列">
-        <button id="hint-btn" class="control-button" type="button">提示</button>
-        <button id="shuffle-btn" class="control-button" type="button">洗牌 x3</button>
-        <button id="pause-btn" class="control-button" type="button">暫停</button>
-        <button id="sound-btn" class="control-button" type="button" aria-pressed="true">音樂 開</button>
+        <button id="hint-btn" class="control-button" type="button"><span id="hint-label" class="control-label">提示</span></button>
+        <button id="shuffle-btn" class="control-button" type="button"><span id="shuffle-label" class="control-label">洗牌 x3</span></button>
+        <button id="pause-btn" class="control-button" type="button"><span id="pause-label" class="control-label">暫停</span></button>
+        <button id="sound-btn" class="control-button" type="button" aria-pressed="true"><span id="sound-label" class="control-label">音樂 開</span></button>
       </section>
 
       <section id="overlay" class="overlay" data-mode="menu">

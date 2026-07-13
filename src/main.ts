@@ -43,8 +43,10 @@ const ui = {
   combo: document.querySelector<HTMLDivElement>("#combo-toast")!,
   hint: document.querySelector<HTMLButtonElement>("#hint-btn")!,
   shuffle: document.querySelector<HTMLButtonElement>("#shuffle-btn")!,
+  shuffleLabel: document.querySelector<HTMLSpanElement>("#shuffle-label")!,
   pause: document.querySelector<HTMLButtonElement>("#pause-btn")!,
   sound: document.querySelector<HTMLButtonElement>("#sound-btn")!,
+  soundLabel: document.querySelector<HTMLSpanElement>("#sound-label")!,
   overlay: document.querySelector<HTMLDivElement>("#overlay")!,
   overlayTitle: document.querySelector<HTMLHeadingElement>("#overlay-title")!,
   overlayText: document.querySelector<HTMLParagraphElement>("#overlay-text")!,
@@ -114,11 +116,11 @@ function updateUi(state: UiState) {
   ui.tier.textContent = state.tierName;
   ui.best.textContent = `${state.bestScore} / Lv.${state.bestLevel}`;
   ui.progress.style.width = `${Math.round(state.progress * 100)}%`;
-  ui.shuffle.textContent = `洗牌 x${state.shufflesLeft}`;
+  ui.shuffleLabel.textContent = `洗牌 x${state.shufflesLeft}`;
   ui.shuffle.disabled = state.shufflesLeft <= 0 || state.state !== "playing";
   ui.hint.disabled = state.state !== "playing";
   ui.pause.disabled = state.state !== "playing";
-  ui.sound.textContent = state.audioEnabled ? "音樂 開" : "音樂 關";
+  ui.soundLabel.textContent = state.audioEnabled ? "音樂 開" : "音樂 關";
   ui.sound.classList.toggle("off", !state.audioEnabled);
   ui.sound.setAttribute("aria-pressed", String(state.audioEnabled));
 

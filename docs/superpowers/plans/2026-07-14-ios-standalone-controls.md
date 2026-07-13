@@ -4,7 +4,7 @@
 
 **Goal:** 讓 iPhone 獨立 Web App 的遊戲背景覆蓋完整螢幕，並固定使用核准參考圖的四顆寶石控制按鈕。
 
-**Architecture:** 由 CSS `100dvh` 與 safe-area inset 單獨管理畫面高度，移除 JavaScript 對 `--app-height` 的覆寫。DOM 與遊戲事件保持不變，只調整背景覆蓋和既有控制按鈕的 CSS 視覺合約。
+**Architecture:** 由 CSS `100dvh` 管理畫面高度，頂部保留 safe-area inset，底部則直接繪製到螢幕邊緣。棋盤容器可在高度不足時縮小，其他 HUD 與控制元件保持固定。按鈕事件不變，外觀改由核准參考圖 sprite 與獨立動態文字層組成。
 
 **Tech Stack:** TypeScript、CSS、Vite、Vitest、Phaser 3
 
@@ -55,7 +55,19 @@ Expected: FAIL，因為 `src/main.ts` 仍覆寫 `--app-height`，且完整背景
 
 讓 `.game-shell` 使用 `height: 100dvh; min-height: 100dvh;`，並讓 `html`、`body`、`.game-shell` 共用 `/assets/gem-kingdom-game-bg.png` 的置中 cover 背景。
 
-- [ ] **Step 3: Run the focused test**
+- [ ] **Step 3: Keep the complete control row inside the viewport**
+
+讓 `#game-wrap` 使用 `flex: 0 1 auto` 吸收高度不足的差額，並取消 `.game-shell` 的底部 safe-area padding，不縮小四顆核准按鈕。
+
+- [ ] **Step 4: Preserve the Apple home-screen launch mode**
+
+移除後來加入的 manifest 連結，保留 `apple-touch-icon`、`apple-mobile-web-app-capable` 與 `viewport-fit=cover`，避免 iPhone 主畫面啟動模式再次改變。
+
+- [ ] **Step 5: Use the approved button artwork directly**
+
+新增核准參考圖素材，四顆按鈕以 sprite 定位顯示原圖外框、寶石與圖示；HTML 增加獨立標籤，讓洗牌次數與音樂狀態仍可更新。
+
+- [ ] **Step 6: Run the focused test**
 
 Run: `pnpm.cmd test -- --run tests/ui-contract.test.ts`
 

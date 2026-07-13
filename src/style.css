@@ -92,10 +92,10 @@ button:disabled {
   align-items: center;
   gap: 6px;
   overflow: hidden;
-  padding:
-    max(7px, env(safe-area-inset-top))
-    8px
-    max(8px, env(safe-area-inset-bottom));
+  padding-top: max(7px, env(safe-area-inset-top));
+  padding-right: 8px;
+  padding-bottom: 0;
+  padding-left: 8px;
   background: url("/assets/gem-kingdom-game-bg.png") center / cover no-repeat;
 }
 
@@ -384,7 +384,7 @@ button:disabled {
   min-width: 0;
   min-height: 0;
   aspect-ratio: 560 / 700;
-  flex: none;
+  flex: 0 1 auto;
   overflow: hidden;
   place-items: start center;
   border: 0;
@@ -417,134 +417,95 @@ canvas {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
+  align-items: end;
 }
 
 .control-button {
+  --control-label-bg: linear-gradient(180deg, #7419bd, #520987);
   position: relative;
   display: grid;
   min-width: 0;
-  min-height: 82px;
-  grid-template-rows: 42px auto;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  overflow: visible;
-  padding: 10px 4px 8px;
-  border: 4px solid #ffd45b;
-  border-radius: 18px;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 22%;
   color: #fff;
-  font-size: 15px;
-  line-height: 1;
-  text-overflow: ellipsis;
-  text-shadow: 0 2px 1px rgba(0, 35, 70, 0.72);
-  white-space: nowrap;
-  box-shadow:
-    inset 0 4px 0 rgba(255, 255, 255, 0.48),
-    inset 0 -7px 0 rgba(0, 37, 76, 0.3),
-    inset 0 0 0 2px rgba(255, 245, 162, 0.3),
-    0 0 0 2px rgba(102, 55, 7, 0.92),
-    0 6px 10px rgba(0, 46, 67, 0.38);
+  background-color: transparent;
+  background-image: url("/assets/gem-control-buttons-reference.jpg");
+  background-repeat: no-repeat;
+  background-size: 473.684% 842.105%;
+  box-shadow: 0 5px 9px rgba(0, 41, 55, 0.34);
+  isolation: isolate;
 }
 
 .control-button:disabled {
   cursor: not-allowed;
-  filter: brightness(0.94) saturate(0.96);
+  filter: brightness(0.93) saturate(0.88);
   opacity: 1;
 }
 
-.control-button::after {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  width: 19px;
-  height: 19px;
-  border: 2px solid #fff0a0;
-  background: linear-gradient(135deg, #ffffff 0 9%, #ff6c8e 16% 42%, #a90f43 62%, #ffb2c2 78%, #63102f);
-  box-shadow: 0 0 0 2px #a45e0e, 0 3px 7px rgba(0, 34, 65, 0.46);
-  content: "";
-  clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
-  transform: translateX(-50%);
-}
-
-#hint-btn::after {
-  background: linear-gradient(135deg, #fff 0 8%, #d96cff 18% 43%, #7513bd 64%, #eea4ff 80%, #45106f);
-}
-
-#shuffle-btn::after {
-  background: linear-gradient(135deg, #fff 0 8%, #70e4ff 18% 43%, #0878c8 64%, #9bf0ff 80%, #074675);
-}
-
-#pause-btn::after {
-  background: linear-gradient(135deg, #fff 0 8%, #9bff5e 18% 43%, #2a9f18 64%, #c3ff8a 80%, #17630f);
-}
-
-#sound-btn::after {
-  background: linear-gradient(135deg, #fff 0 8%, #ffe36c 18% 43%, #ed8611 64%, #fff1a1 80%, #9d4f08);
-}
-
 .control-button::before {
+  position: absolute;
+  right: 11%;
+  bottom: 9%;
+  left: 11%;
+  z-index: 1;
+  height: 27%;
+  border-radius: 0 0 14% 14%;
+  background: var(--control-label-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  content: "";
+}
+
+.control-label {
+  position: absolute;
+  right: 7%;
+  bottom: 10%;
+  left: 7%;
+  z-index: 2;
   display: grid;
-  width: 38px;
-  height: 38px;
+  height: 23%;
   place-items: center;
-  color: #fff4a8;
-  font-size: 38px;
+  overflow: hidden;
+  color: #fff;
+  font-size: clamp(13px, 3.8vw, 18px);
   font-weight: 900;
   line-height: 1;
-  text-shadow: 0 3px 0 #75420b, 0 0 7px rgba(255, 240, 132, 0.56);
-  -webkit-text-stroke: 1px rgba(117, 66, 11, 0.78);
+  text-shadow:
+    0 2px 0 rgba(5, 34, 69, 0.95),
+    1px 0 0 rgba(5, 34, 69, 0.95),
+    -1px 0 0 rgba(5, 34, 69, 0.95);
+  white-space: nowrap;
 }
 
 #hint-btn {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0 42%, rgba(255, 255, 255, 0) 43%),
-    linear-gradient(180deg, #c94df2, #7b1bc0 58%, #4d0a88);
+  background-position: 5.46% 95.48%;
 }
 
 #shuffle-btn {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 42%, rgba(255, 255, 255, 0) 43%),
-    linear-gradient(180deg, #2bcaf2, #0785cc 58%, #075999);
+  --control-label-bg: linear-gradient(180deg, #0a82c4, #075b9d);
+  background-position: 35.04% 95.48%;
 }
 
 #pause-btn {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 42%, rgba(255, 255, 255, 0) 43%),
-    linear-gradient(180deg, #78e531, #35ae16 58%, #1a7b0c);
+  --control-label-bg: linear-gradient(180deg, #35aa17, #1d7e0d);
+  background-position: 64.79% 95.48%;
 }
 
 #sound-btn {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0 42%, rgba(255, 255, 255, 0) 43%),
-    linear-gradient(180deg, #ffc238, #f18a15 58%, #c65b0b);
-}
-
-#hint-btn::before {
-  content: "";
-  background:
-    linear-gradient(180deg, #fff2a0, #a85b08) center 100% / 38% 16% no-repeat,
-    linear-gradient(180deg, #fff8bd, #d78a10) center 80% / 52% 20% no-repeat,
-    radial-gradient(ellipse at 50% 40%, #fffbe1 0 12%, #ffe45b 26%, #f1a91d 55%, #a95808 72%, transparent 74%) center 0 / 92% 78% no-repeat;
-  filter: drop-shadow(0 3px 0 #75420b) drop-shadow(0 0 6px rgba(255, 234, 92, 0.62));
-}
-
-#shuffle-btn::before {
-  content: "↻";
-}
-
-#pause-btn::before {
-  content: "Ⅱ";
-  font-family: Georgia, serif;
-  font-size: 31px;
-}
-
-#sound-btn::before {
-  content: "♪";
+  --control-label-bg: linear-gradient(180deg, #ed8613, #c45b0b);
+  background-position: 94.54% 95.48%;
 }
 
 #sound-btn.off {
-  color: rgba(255, 255, 255, 0.72);
-  background: linear-gradient(180deg, #ba7f26, #8a4d16);
+  filter: brightness(0.88) saturate(0.84);
+}
+
+.control-button:active:not(:disabled) {
+  box-shadow: 0 2px 5px rgba(0, 41, 55, 0.38);
+  transform: scale(0.97);
 }
 
 #combo-toast {
@@ -820,11 +781,8 @@ canvas {
     font-size: 15px;
   }
 
-  .control-button {
-    gap: 3px;
-    padding-right: 3px;
-    padding-left: 3px;
-    font-size: 14px;
+  .control-label {
+    font-size: 13px;
   }
 }
 
@@ -832,7 +790,7 @@ canvas {
   .game-shell {
     gap: 4px;
     padding-top: max(5px, env(safe-area-inset-top));
-    padding-bottom: max(6px, env(safe-area-inset-bottom));
+    padding-bottom: 0;
   }
 
   .top-hud {
@@ -879,22 +837,8 @@ canvas {
     width: 28px;
   }
 
-  .control-button {
-    min-height: 68px;
-    grid-template-rows: 32px auto;
-    padding-top: 7px;
-    padding-bottom: 6px;
-    font-size: 13px;
-  }
-
-  .control-button::before {
-    width: 31px;
-    height: 31px;
-    font-size: 30px;
-  }
-
-  #pause-btn::before {
-    font-size: 25px;
+  .bottom-controls {
+    gap: 5px;
   }
 }
 

@@ -23,6 +23,12 @@ describe("Gem Kingdom UI contract", () => {
     expect(html).toContain('id="shuffle-btn"');
     expect(html).toContain('id="pause-btn"');
     expect(html).toContain('id="sound-btn"');
+    expect(html).toContain('id="hint-label" class="control-label"');
+    expect(html).toContain('id="shuffle-label" class="control-label"');
+    expect(html).toContain('id="pause-label" class="control-label"');
+    expect(html).toContain('id="sound-label" class="control-label"');
+    expect(main).toContain("ui.shuffleLabel.textContent");
+    expect(main).toContain("ui.soundLabel.textContent");
   });
 
   test("uses an iPhone-safe full-screen start menu", () => {
@@ -38,11 +44,12 @@ describe("Gem Kingdom UI contract", () => {
     expect(main).not.toContain('visualViewport?.addEventListener("resize"');
     expect(css).toMatch(/\.game-shell\s*\{[^}]*height:\s*100dvh[^}]*min-height:\s*100dvh/s);
     expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.png"\)/s);
-    expect(css).toContain("env(safe-area-inset-bottom)");
+    expect(css).toMatch(/\.game-shell\s*\{[^}]*padding-bottom:\s*0/s);
+    expect(css).toMatch(/#game-wrap\s*\{[^}]*flex:\s*0 1 auto/s);
   });
 
   test("publishes the approved artwork as the browser and iPhone home-screen icon", () => {
-    expect(html).toContain('rel="manifest" href="/manifest.webmanifest"');
+    expect(html).not.toContain('rel="manifest"');
     expect(html).toContain('rel="apple-touch-icon" href="/assets/gem-blocks-app-icon.png"');
     expect(html).toContain('rel="icon" type="image/png" href="/assets/gem-blocks-app-icon.png"');
     expect(manifest).toContain('"src": "/assets/gem-blocks-app-icon.png"');
@@ -64,11 +71,12 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("#shuffle-btn {");
     expect(css).toContain("#pause-btn {");
     expect(css).toContain("#sound-btn {");
-    expect(css).toMatch(/\.control-button\s*\{[^}]*min-height:\s*82px/s);
-    expect(css).toMatch(/\.control-button::before\s*\{[^}]*width:\s*38px[^}]*height:\s*38px/s);
+    expect(css).toMatch(/\.control-button\s*\{[^}]*aspect-ratio:\s*1\s*\/\s*1/s);
     expect(css).toMatch(/\.bottom-controls\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
-    expect(css).toMatch(/\.control-button\s*\{[^}]*border:\s*4px solid #ffd45b[^}]*border-radius:\s*18px/s);
-    expect(css).toMatch(/\.control-button::after\s*\{[^}]*top:\s*-10px[^}]*width:\s*19px[^}]*height:\s*19px/s);
+    expect(css).toContain('background-image: url("/assets/gem-control-buttons-reference.jpg")');
+    expect(css).toMatch(/#hint-btn\s*\{[^}]*background-position:\s*5\.46% 95\.48%/s);
+    expect(css).toMatch(/#sound-btn\s*\{[^}]*background-position:\s*94\.54% 95\.48%/s);
+    expect(css).toMatch(/\.control-label\s*\{[^}]*position:\s*absolute/s);
   });
 
   test("connects a real refill preview and transparent special-gem stage", () => {
@@ -87,7 +95,7 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain('background-position: 100% 50%;');
     expect(css).toContain("@keyframes preview-gem-drop");
     expect(css).toContain(".gem-legend.is-refilling");
-    expect(css).toContain(".control-button::after");
+    expect(css).toContain(".control-label");
   });
 
   test("keeps resolving controls solid and presents special gems as powered jewels", () => {
