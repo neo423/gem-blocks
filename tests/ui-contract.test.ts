@@ -71,6 +71,12 @@ describe("Gem Kingdom UI contract", () => {
   test("keeps resolving controls solid and presents special gems as powered jewels", () => {
     expect(css).toMatch(/\.control-button:disabled\s*\{[^}]*opacity:\s*1/s);
     expect(scene).toContain("drawElectricAura");
+    expect(scene).toContain("drawElectricCorona");
+    expect(scene).toContain("GEM_CHARGE_COLORS");
+    expect(scene).toContain("chargedCoreScaleX * 1.06");
+    expect(scene).not.toContain("drawElectricPair");
+    expect(scene).not.toContain("drawElectricBolt");
+    expect(scene).not.toMatch(/targets: chargedCore,[\s\S]{0,120}scale: 1\.06/);
     expect(scene).not.toContain("horizontal ? 66 : 11");
     expect(gemArt).toContain("drawRoyalSetting");
     expect(gemArt).toContain("0xffd45b");

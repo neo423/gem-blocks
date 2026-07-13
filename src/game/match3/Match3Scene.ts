@@ -54,6 +54,7 @@ const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
 const BOARD_Y = 41;
 const SAVE_KEY = "gem-blocks-save-v1";
 const GEM_ATLAS_KEY = "gem-atlas";
+const GEM_CHARGE_COLORS = [0xff4265, 0xffd64e, 0x39ed9b, 0x4db8ff, 0xd56cff, 0xe9fbff];
 
 export class Match3Scene extends Phaser.Scene {
   private board: Board = makeBoard();
@@ -274,7 +275,7 @@ export class Match3Scene extends Phaser.Scene {
       : this.add.image(0, 0, gemTextureKey(this.tier.key, value));
     gem.setDisplaySize(GEM_TEXTURE_SIZE * 0.78, GEM_TEXTURE_SIZE * 0.78);
     container.add([halo, gem]);
-    this.addSpecialBadge(container, this.specials[cell.row][cell.col]);
+    this.addSpecialBadge(container, gem, this.specials[cell.row][cell.col], value);
 
     if (options.dropIn) {
       container.y = p.y - (GEM_SIZE + GAP) * (1.1 + cell.row * 0.16);
@@ -295,12 +296,17 @@ export class Match3Scene extends Phaser.Scene {
     return container;
   }
 
-  private addSpecialBadge(container: Phaser.GameObjects.Container, special: number) {
+  private addSpecialBadge(
+    container: Phaser.GameObjects.Container,
+    gem: Phaser.GameObjects.Image,
+    special: number,
+    value: GemValue
+  ) {
     if (special === SPECIAL_NONE) {
       return;
     }
     if (special === SPECIAL_ROW || special === SPECIAL_COLUMN) {
-      this.drawElectricAura(container, special === SPECIAL_ROW);
+      this.drawElectricAura(container, gem, value, special === SPECIAL_ROW);
       return;
     }
 
@@ -318,64 +324,121 @@ export class Match3Scene extends Phaser.Scene {
     });
   }
 
-  private drawElectricAura(container: Phaser.GameObjects.Container, horizontal: boolean) {
-    const corona = this.add.circle(0, 0, 36, 0xffc72e, 0.07);
-    corona.setStrokeStyle(2, 0xffec94, 0.58);
+  private drawElectricAura(
+    container: Phaser.GameObjects.Container,
+    gem: Phaser.GameObjects.Image,
+    value: GemValue,
+    horizontal: boolean
+  ) {
+    const chargeColor = GEM_CHARGE_COLORS[value] ?? 0xffffff;
+    const chargedCore = this.add
+      .image(0, 0, gem.texture.key, gem.frame.name)
+      .setDisplaySize(gem.displayWidth * 1.04, gem.displayHeight * 1.04)
+      .setTint(chargeColor)
+      .setAlpha(0.25)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    const chargedCoreScaleX = chargedCore.scaleX;
+    const chargedCoreScaleY = chargedCore.scaleY;
+    const innerGlow = this.add.circle(0, 0, 27, chargeColor, 0.18).setBlendMode(Phaser.BlendModes.ADD);
+    const goldGlow = this.add.circle(0, 0, 35, 0xffa624, 0.1).setBlendMode(Phaser.BlendModes.ADD);
+    goldGlow.setStrokeStyle(1.5, 0xffdf5a, 0.46);
 
-    const primary = this.add.graphics();
-    const secondary = this.add.graphics();
-    this.drawElectricPair(primary, horizontal, 0, 0xffffff, 0.96);
-    this.drawElectricPair(secondary, horizontal, 1, 0xffc928, 0.8);
-    secondary.alpha = 0.26;
+    const primaryCorona = this.add.graphics();
+    const secondaryCorona = this.add.graphics();
+    this.drawElectricCorona(primaryCorona, horizontal, 0, 0xffc72f, 0.98);
+    this.drawElectricCorona(secondaryCorona, horizontal, 1, chargeColor, 0.66);
+    secondaryCorona.alpha = 0.22;
 
-    const ends = horizontal
-      ? [this.add.circle(-36, 0, 3, 0xffffff, 0.88), this.add.circle(36, 0, 3, 0xffffff, 0.88)]
-      : [this.add.circle(0, -36, 3, 0xffffff, 0.88), this.add.circle(0, 36, 3, 0xffffff, 0.88)];
+    const glints = [
+      this.add.star(-18, -18, 4, 1.5, 6, 0xffffff, 0.94),
+      this.add.star(19, 15, 4, 1, 4.5, 0xffef9c, 0.82)
+    ];
+    glints.forEach((glint) => glint.setBlendMode(Phaser.BlendModes.ADD));
 
-    container.add([corona, secondary, primary, ...ends]);
-    this.tweens.add({ targets: corona, alpha: 0.22, scale: 1.08, yoyo: true, repeat: -1, duration: 380 });
-    this.tweens.add({ targets: [primary, ...ends], alpha: 0.35, yoyo: true, repeat: -1, duration: 150 });
-    this.tweens.add({ targets: secondary, alpha: 0.88, yoyo: true, repeat: -1, duration: 210, delay: 70 });
+    container.addAt([goldGlow, innerGlow, chargedCore], 1);
+    container.add([secondaryCorona, primaryCorona, ...glints]);
+    this.tweens.add({
+      targets: chargedCore,
+      alpha: 0.5,
+      scaleX: chargedCoreScaleX * 1.06,
+      scaleY: chargedCoreScaleY * 1.06,
+      yoyo: true,
+      repeat: -1,
+      duration: 420,
+      ease: "Sine.easeInOut"
+    });
+    this.tweens.add({
+      targets: [innerGlow, goldGlow],
+      alpha: 0.29,
+      scale: 1.12,
+      yoyo: true,
+      repeat: -1,
+      duration: 360,
+      ease: "Sine.easeInOut"
+    });
+    this.tweens.add({ targets: primaryCorona, alpha: 0.34, yoyo: true, repeat: -1, duration: 130 });
+    this.tweens.add({ targets: secondaryCorona, alpha: 0.9, yoyo: true, repeat: -1, duration: 190, delay: 55 });
+    this.tweens.add({ targets: glints, alpha: 0.18, scale: 0.62, yoyo: true, repeat: -1, duration: 240 });
   }
 
-  private drawElectricPair(
+  private drawElectricCorona(
     graphics: Phaser.GameObjects.Graphics,
     horizontal: boolean,
     phase: number,
     color: number,
     alpha: number
   ) {
-    graphics.lineStyle(3, color, alpha);
-    if (horizontal) {
-      this.drawElectricBolt(graphics, -34, -27, 34, -25, phase);
-      this.drawElectricBolt(graphics, -34, 27, 34, 25, phase + 1);
-      return;
-    }
-    this.drawElectricBolt(graphics, -28, -34, -26, 34, phase);
-    this.drawElectricBolt(graphics, 28, -34, 26, 34, phase + 1);
-  }
+    graphics.setBlendMode(Phaser.BlendModes.ADD);
+    const angles = [-2.92, -2.31, -1.66, -1.08, -0.39, 0.19, 0.84, 1.57, 2.13, 2.69];
+    for (let index = 0; index < angles.length; index += 1) {
+      const angle = angles[index] + phase * 0.11;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const tangentX = -sin;
+      const tangentY = cos;
+      const aligned = horizontal ? Math.abs(cos) > 0.82 : Math.abs(sin) > 0.82;
+      const startRadius = 23 + ((index + phase) % 4);
+      const endRadius = (aligned ? 46 : 39) + ((index * 3 + phase) % 7);
+      const points: Array<{ x: number; y: number }> = [{ x: cos * startRadius, y: sin * startRadius }];
 
-  private drawElectricBolt(
-    graphics: Phaser.GameObjects.Graphics,
-    startX: number,
-    startY: number,
-    endX: number,
-    endY: number,
-    phase: number
-  ) {
-    graphics.beginPath();
-    graphics.moveTo(startX, startY);
-    const segments = 6;
-    for (let index = 1; index < segments; index += 1) {
-      const progress = index / segments;
-      const x = Phaser.Math.Linear(startX, endX, progress);
-      const y = Phaser.Math.Linear(startY, endY, progress);
-      const offset = (index + phase) % 2 === 0 ? 5 : -5;
-      const horizontal = Math.abs(endX - startX) >= Math.abs(endY - startY);
-      graphics.lineTo(horizontal ? x : x + offset, horizontal ? y + offset : y);
+      for (let segment = 1; segment <= 4; segment += 1) {
+        const progress = segment / 5;
+        const radius = Phaser.Math.Linear(startRadius, endRadius, progress);
+        const direction = (index + segment + phase) % 2 === 0 ? 1 : -1;
+        const jitter = direction * (2.2 + ((index * 2 + segment) % 4));
+        points.push({ x: cos * radius + tangentX * jitter, y: sin * radius + tangentY * jitter });
+      }
+      points.push({ x: cos * endRadius, y: sin * endRadius });
+
+      const strokeBolt = (width: number, strokeAlpha: number) => {
+        graphics.lineStyle(width, color, strokeAlpha);
+        graphics.beginPath();
+        graphics.moveTo(points[0].x, points[0].y);
+        points.slice(1).forEach((point) => graphics.lineTo(point.x, point.y));
+        graphics.strokePath();
+      };
+      strokeBolt(aligned ? 5 : 3.5, alpha * 0.16);
+      strokeBolt(aligned ? 1.9 : 1.35, aligned ? alpha : alpha * 0.8);
+
+      if ((index + phase) % 2 === 0) {
+        const branchOrigin = points[3];
+        const branchDirection = (index + phase) % 4 === 0 ? 1 : -1;
+        const branchEnd = {
+          x: branchOrigin.x + cos * 8 + tangentX * 7 * branchDirection,
+          y: branchOrigin.y + sin * 8 + tangentY * 7 * branchDirection
+        };
+        graphics.lineStyle(3, color, alpha * 0.12);
+        graphics.beginPath();
+        graphics.moveTo(branchOrigin.x, branchOrigin.y);
+        graphics.lineTo(branchEnd.x, branchEnd.y);
+        graphics.strokePath();
+        graphics.lineStyle(1, color, alpha * 0.58);
+        graphics.beginPath();
+        graphics.moveTo(branchOrigin.x, branchOrigin.y);
+        graphics.lineTo(branchEnd.x, branchEnd.y);
+        graphics.strokePath();
+      }
     }
-    graphics.lineTo(endX, endY);
-    graphics.strokePath();
   }
 
   private onBoardPointerDown(pointer: Phaser.Input.Pointer) {
