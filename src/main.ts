@@ -58,15 +58,6 @@ const ui = {
 let overlayMode: OverlayState["mode"] = "menu";
 let renderedPreviewRevision = -1;
 
-function syncAppHeight() {
-  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-  document.documentElement.style.setProperty("--app-height", `${Math.round(viewportHeight)}px`);
-}
-
-syncAppHeight();
-window.addEventListener("resize", syncAppHeight);
-window.visualViewport?.addEventListener("resize", syncAppHeight);
-
 new Phaser.Game(MATCH3_GAME_CONFIG);
 
 window.addEventListener("gem-ui", (event) => {

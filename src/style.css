@@ -1,5 +1,4 @@
 :root {
-  --app-height: 100dvh;
   --bg-main: #159ed9;
   --bg-panel: #063d78;
   --bg-panel-2: #075898;
@@ -19,6 +18,16 @@ body,
   width: 100%;
   height: 100%;
   margin: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+  background-color: #159ed9;
+  background-image: url("/assets/gem-kingdom-game-bg.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 html {
@@ -77,8 +86,8 @@ button:disabled {
   position: relative;
   display: flex;
   width: 100%;
-  height: var(--app-height);
-  min-height: 0;
+  height: 100dvh;
+  min-height: 100dvh;
   flex-direction: column;
   align-items: center;
   gap: 6px;

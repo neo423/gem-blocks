@@ -33,6 +33,14 @@ describe("Gem Kingdom UI contract", () => {
     expect(html).toContain('id="rules-panel"');
   });
 
+  test("covers the full iPhone standalone viewport with the game background", () => {
+    expect(main).not.toContain('style.setProperty("--app-height"');
+    expect(main).not.toContain('visualViewport?.addEventListener("resize"');
+    expect(css).toMatch(/\.game-shell\s*\{[^}]*height:\s*100dvh[^}]*min-height:\s*100dvh/s);
+    expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.png"\)/s);
+    expect(css).toContain("env(safe-area-inset-bottom)");
+  });
+
   test("publishes the approved artwork as the browser and iPhone home-screen icon", () => {
     expect(html).toContain('rel="manifest" href="/manifest.webmanifest"');
     expect(html).toContain('rel="apple-touch-icon" href="/assets/gem-blocks-app-icon.png"');
@@ -58,6 +66,9 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("#sound-btn {");
     expect(css).toMatch(/\.control-button\s*\{[^}]*min-height:\s*82px/s);
     expect(css).toMatch(/\.control-button::before\s*\{[^}]*width:\s*38px[^}]*height:\s*38px/s);
+    expect(css).toMatch(/\.bottom-controls\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
+    expect(css).toMatch(/\.control-button\s*\{[^}]*border:\s*4px solid #ffd45b[^}]*border-radius:\s*18px/s);
+    expect(css).toMatch(/\.control-button::after\s*\{[^}]*top:\s*-10px[^}]*width:\s*19px[^}]*height:\s*19px/s);
   });
 
   test("connects a real refill preview and transparent special-gem stage", () => {
