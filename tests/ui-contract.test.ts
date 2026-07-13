@@ -92,4 +92,10 @@ describe("Gem Kingdom UI contract", () => {
     expect(scene).toContain('const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);');
     expect(scene).not.toContain('this.tier.key === "classic" &&');
   });
+
+  test("compensates for uneven transparent padding in every atlas gem", () => {
+    expect(scene).toContain("const GEM_ATLAS_ORIGINS");
+    expect(scene).toContain("gem.setOrigin(atlasOrigin.x, atlasOrigin.y)");
+    expect(scene).toContain(".setOrigin(gem.originX, gem.originY)");
+  });
 });

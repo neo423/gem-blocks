@@ -55,6 +55,16 @@ const BOARD_Y = 41;
 const SAVE_KEY = "gem-blocks-save-v1";
 const GEM_ATLAS_KEY = "gem-atlas";
 const GEM_CHARGE_COLORS = [0xff4265, 0xffd64e, 0x39ed9b, 0x4db8ff, 0xd56cff, 0xe9fbff];
+// Compensate for the asymmetric transparent padding inside each 418px atlas cell.
+const GEM_ATLAS_ORIGINS: Readonly<Record<number, { x: number; y: number }>> = {
+  0: { x: 237 / 418, y: 248.5 / 418 },
+  1: { x: 209.5 / 418, y: 251.5 / 418 },
+  2: { x: 185 / 418, y: 250.5 / 418 },
+  3: { x: 235.5 / 418, y: 214.5 / 418 },
+  4: { x: 207 / 418, y: 205 / 418 },
+  5: { x: 179.5 / 418, y: 213.5 / 418 },
+  6: { x: 232 / 418, y: 164.5 / 418 }
+};
 
 export class Match3Scene extends Phaser.Scene {
   private board: Board = makeBoard();
@@ -277,6 +287,10 @@ export class Match3Scene extends Phaser.Scene {
     const gem = useAtlas
       ? this.add.image(0, 0, "gem-atlas", frame)
       : this.add.image(0, 0, gemTextureKey(this.tier.key, value));
+    if (useAtlas) {
+      const atlasOrigin = GEM_ATLAS_ORIGINS[value] ?? { x: 0.5, y: 0.5 };
+      gem.setOrigin(atlasOrigin.x, atlasOrigin.y);
+    }
     gem.setDisplaySize(GEM_TEXTURE_SIZE * 0.78, GEM_TEXTURE_SIZE * 0.78);
     container.add([halo, gem]);
     this.addSpecialBadge(container, gem, this.specials[cell.row][cell.col], value);
@@ -337,6 +351,7 @@ export class Match3Scene extends Phaser.Scene {
     const chargeColor = GEM_CHARGE_COLORS[value] ?? 0xffffff;
     const chargedCore = this.add
       .image(0, 0, gem.texture.key, gem.frame.name)
+      .setOrigin(gem.originX, gem.originY)
       .setDisplaySize(gem.displayWidth * 1.04, gem.displayHeight * 1.04)
       .setTint(chargeColor)
       .setAlpha(0.25)
