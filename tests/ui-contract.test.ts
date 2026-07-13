@@ -37,7 +37,7 @@ describe("Gem Kingdom UI contract", () => {
     expect(scene).toContain("const BOARD_Y = 41;");
     expect(scene).not.toContain("drawBackground()");
     expect(css).toContain("aspect-ratio: 560 / 700;");
-    expect(css).toContain("calc(80dvh - 178px)");
+    expect(css).toContain("calc(80dvh - 194px)");
   });
 
   test("uses the bright fantasy kingdom gameplay theme", () => {
@@ -47,6 +47,8 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("#shuffle-btn {");
     expect(css).toContain("#pause-btn {");
     expect(css).toContain("#sound-btn {");
+    expect(css).toMatch(/\.control-button\s*\{[^}]*min-height:\s*82px/s);
+    expect(css).toMatch(/\.control-button::before\s*\{[^}]*width:\s*38px[^}]*height:\s*38px/s);
   });
 
   test("connects a real refill preview and transparent special-gem stage", () => {
@@ -80,5 +82,14 @@ describe("Gem Kingdom UI contract", () => {
     expect(scene).not.toContain("horizontal ? 66 : 11");
     expect(gemArt).toContain("drawRoyalSetting");
     expect(gemArt).toContain("0xffd45b");
+  });
+
+  test("centers selection feedback and keeps the real gem atlas across every level", () => {
+    expect(scene).toContain("this.selectionRing = this.add.circle(p.x, p.y");
+    expect(scene).toContain("this.tweens.killTweensOf(this.selectionRing)");
+    expect(scene).toMatch(/private renderBoard[\s\S]{0,140}this\.clearSelection\(\)/);
+    expect(scene).not.toContain("gem.add(ring)");
+    expect(scene).toContain('const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);');
+    expect(scene).not.toContain('this.tier.key === "classic" &&');
   });
 });

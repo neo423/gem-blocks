@@ -414,26 +414,27 @@ canvas {
   position: relative;
   display: grid;
   min-width: 0;
-  min-height: 64px;
-  grid-template-rows: 1fr auto;
+  min-height: 82px;
+  grid-template-rows: 42px auto;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 4px;
   overflow: visible;
-  padding: 5px 4px 6px;
-  border: 3px solid #ffd45b;
-  border-radius: 13px;
+  padding: 10px 4px 8px;
+  border: 4px solid #ffd45b;
+  border-radius: 18px;
   color: #fff;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1;
   text-overflow: ellipsis;
   text-shadow: 0 2px 1px rgba(0, 35, 70, 0.72);
   white-space: nowrap;
   box-shadow:
-    inset 0 3px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -5px 0 rgba(0, 37, 76, 0.26),
-    0 0 0 2px rgba(102, 55, 7, 0.86),
-    0 5px 9px rgba(0, 46, 67, 0.32);
+    inset 0 4px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -7px 0 rgba(0, 37, 76, 0.3),
+    inset 0 0 0 2px rgba(255, 245, 162, 0.3),
+    0 0 0 2px rgba(102, 55, 7, 0.92),
+    0 6px 10px rgba(0, 46, 67, 0.38);
 }
 
 .control-button:disabled {
@@ -444,10 +445,10 @@ canvas {
 
 .control-button::after {
   position: absolute;
-  top: -8px;
+  top: -10px;
   left: 50%;
-  width: 16px;
-  height: 16px;
+  width: 19px;
+  height: 19px;
   border: 2px solid #fff0a0;
   background: linear-gradient(135deg, #ffffff 0 9%, #ff6c8e 16% 42%, #a90f43 62%, #ffb2c2 78%, #63102f);
   box-shadow: 0 0 0 2px #a45e0e, 0 3px 7px rgba(0, 34, 65, 0.46);
@@ -474,33 +475,48 @@ canvas {
 
 .control-button::before {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   color: #fff4a8;
-  font-size: 26px;
+  font-size: 38px;
+  font-weight: 900;
   line-height: 1;
-  text-shadow: 0 2px 0 #75420b, 0 0 6px rgba(255, 240, 132, 0.5);
+  text-shadow: 0 3px 0 #75420b, 0 0 7px rgba(255, 240, 132, 0.56);
+  -webkit-text-stroke: 1px rgba(117, 66, 11, 0.78);
 }
 
 #hint-btn {
-  background: linear-gradient(180deg, #b440e8, #6415ac);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0 42%, rgba(255, 255, 255, 0) 43%),
+    linear-gradient(180deg, #c94df2, #7b1bc0 58%, #4d0a88);
 }
 
 #shuffle-btn {
-  background: linear-gradient(180deg, #20bdec, #0875bf);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 42%, rgba(255, 255, 255, 0) 43%),
+    linear-gradient(180deg, #2bcaf2, #0785cc 58%, #075999);
 }
 
 #pause-btn {
-  background: linear-gradient(180deg, #6fdc25, #269d13);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0 42%, rgba(255, 255, 255, 0) 43%),
+    linear-gradient(180deg, #78e531, #35ae16 58%, #1a7b0c);
 }
 
 #sound-btn {
-  background: linear-gradient(180deg, #ffb52c, #ed7114);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0 42%, rgba(255, 255, 255, 0) 43%),
+    linear-gradient(180deg, #ffc238, #f18a15 58%, #c65b0b);
 }
 
 #hint-btn::before {
-  content: "\1F4A1";
+  content: "";
+  background:
+    linear-gradient(180deg, #fff2a0, #a85b08) center 100% / 38% 16% no-repeat,
+    linear-gradient(180deg, #fff8bd, #d78a10) center 80% / 52% 20% no-repeat,
+    radial-gradient(ellipse at 50% 40%, #fffbe1 0 12%, #ffe45b 26%, #f1a91d 55%, #a95808 72%, transparent 74%) center 0 / 92% 78% no-repeat;
+  filter: drop-shadow(0 3px 0 #75420b) drop-shadow(0 0 6px rgba(255, 234, 92, 0.62));
 }
 
 #shuffle-btn::before {
@@ -510,7 +526,7 @@ canvas {
 #pause-btn::before {
   content: "Ⅱ";
   font-family: Georgia, serif;
-  font-size: 15px;
+  font-size: 31px;
 }
 
 #sound-btn::before {
@@ -799,7 +815,7 @@ canvas {
     gap: 3px;
     padding-right: 3px;
     padding-left: 3px;
-    font-size: 12px;
+    font-size: 14px;
   }
 }
 
@@ -816,7 +832,7 @@ canvas {
   }
 
   #game-wrap {
-    width: min(100%, calc(80dvh - 178px));
+    width: min(100%, calc(80dvh - 194px));
   }
 
   .hud-data-panel {
@@ -855,13 +871,21 @@ canvas {
   }
 
   .control-button {
-    min-height: 52px;
+    min-height: 68px;
+    grid-template-rows: 32px auto;
+    padding-top: 7px;
+    padding-bottom: 6px;
+    font-size: 13px;
   }
 
   .control-button::before {
-    width: 23px;
-    height: 23px;
-    font-size: 22px;
+    width: 31px;
+    height: 31px;
+    font-size: 30px;
+  }
+
+  #pause-btn::before {
+    font-size: 25px;
   }
 }
 

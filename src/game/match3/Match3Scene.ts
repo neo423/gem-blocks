@@ -62,6 +62,7 @@ export class Match3Scene extends Phaser.Scene {
   private gems = new Map<number, Phaser.GameObjects.Container>();
   private state: PlayState = "menu";
   private selected?: Cell;
+  private selectionRing?: Phaser.GameObjects.Arc;
   private dragStart?: { cell: Cell; x: number; y: number; consumed: boolean };
   private pendingSwap: Cell[] = [];
   private level = 1;
@@ -165,6 +166,7 @@ export class Match3Scene extends Phaser.Scene {
     this.specials = createEmptySpecialBoard();
     this.refillQueue = new GemRefillQueue();
     this.selected = undefined;
+    this.clearSelection();
     this.pendingSwap = [];
     this.clearTimer();
     this.renderBoard();
@@ -246,6 +248,8 @@ export class Match3Scene extends Phaser.Scene {
   }
 
   private renderBoard(options: RenderBoardOptions = {}) {
+    this.selected = undefined;
+    this.clearSelection();
     this.gems.forEach((gem) => gem.destroy());
     this.gems.clear();
 
@@ -269,7 +273,7 @@ export class Match3Scene extends Phaser.Scene {
 
     const halo = this.add.circle(0, 2, GEM_SIZE * 0.45, this.tier.rimLight, 0.07);
     const frame = `gem-${value}`;
-    const useAtlas = this.tier.key === "classic" && this.textures.get(GEM_ATLAS_KEY).has(frame);
+    const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);
     const gem = useAtlas
       ? this.add.image(0, 0, "gem-atlas", frame)
       : this.add.image(0, 0, gemTextureKey(this.tier.key, value));
@@ -520,20 +524,28 @@ export class Match3Scene extends Phaser.Scene {
     }
     gem.setScale(0.88);
     this.tweens.add({ targets: gem, scale: 1, duration: 180, ease: "Back.Out" });
-    const ring = this.add.circle(0, 0, GEM_SIZE * 0.48);
-    ring.setStrokeStyle(4, 0xffffff, 0.8);
-    ring.setName("selection-ring");
-    gem.add(ring);
+    const p = this.cellToWorld(cell);
+    this.selectionRing = this.add.circle(p.x, p.y, GEM_SIZE * 0.46, 0xffffff, 0.035);
+    this.selectionRing.setStrokeStyle(4, 0xffffff, 0.92);
+    this.selectionRing.setDepth(82);
+    this.tweens.add({
+      targets: this.selectionRing,
+      scale: 1.08,
+      alpha: 0.66,
+      yoyo: true,
+      repeat: -1,
+      duration: 430,
+      ease: "Sine.easeInOut"
+    });
   }
 
   private clearSelection() {
-    this.gems.forEach((gem) => {
-      gem.each((child: Phaser.GameObjects.GameObject) => {
-        if (child instanceof Phaser.GameObjects.Arc && child.name === "selection-ring") {
-          child.destroy();
-        }
-      });
-    });
+    if (!this.selectionRing) {
+      return;
+    }
+    this.tweens.killTweensOf(this.selectionRing);
+    this.selectionRing.destroy();
+    this.selectionRing = undefined;
   }
 
   private trySwap(a: Cell, b: Cell) {
