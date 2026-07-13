@@ -300,21 +300,82 @@ export class Match3Scene extends Phaser.Scene {
       return;
     }
     if (special === SPECIAL_ROW || special === SPECIAL_COLUMN) {
-      const horizontal = special === SPECIAL_ROW;
-      const glow = this.add.rectangle(0, 0, horizontal ? 66 : 11, horizontal ? 11 : 66, 0xffffff, 0.62);
-      glow.setStrokeStyle(3, 0x8ff7ff, 0.92);
-      const core = this.add.rectangle(0, 0, horizontal ? 58 : 4, horizontal ? 4 : 58, 0xffffff, 0.96);
-      container.add([glow, core]);
-      this.tweens.add({ targets: glow, alpha: 0.24, yoyo: true, repeat: -1, duration: 460, ease: "Sine.easeInOut" });
+      this.drawElectricAura(container, special === SPECIAL_ROW);
       return;
     }
 
-    const outer = this.add.circle(0, 0, 38);
-    outer.setStrokeStyle(4, 0xffffff, 0.9);
-    const inner = this.add.circle(0, 0, 30);
-    inner.setStrokeStyle(3, 0x8ff7ff, 0.78);
-    container.add([outer, inner]);
-    this.tweens.add({ targets: outer, angle: 360, duration: 1800, repeat: -1 });
+    const royalGlow = this.add.circle(0, 0, 39, 0xffd45b, 0.08);
+    royalGlow.setStrokeStyle(2, 0xfff1a0, 0.76);
+    container.add(royalGlow);
+    this.tweens.add({
+      targets: royalGlow,
+      alpha: 0.3,
+      scale: 1.08,
+      yoyo: true,
+      repeat: -1,
+      duration: 620,
+      ease: "Sine.easeInOut"
+    });
+  }
+
+  private drawElectricAura(container: Phaser.GameObjects.Container, horizontal: boolean) {
+    const corona = this.add.circle(0, 0, 36, 0xffc72e, 0.07);
+    corona.setStrokeStyle(2, 0xffec94, 0.58);
+
+    const primary = this.add.graphics();
+    const secondary = this.add.graphics();
+    this.drawElectricPair(primary, horizontal, 0, 0xffffff, 0.96);
+    this.drawElectricPair(secondary, horizontal, 1, 0xffc928, 0.8);
+    secondary.alpha = 0.26;
+
+    const ends = horizontal
+      ? [this.add.circle(-36, 0, 3, 0xffffff, 0.88), this.add.circle(36, 0, 3, 0xffffff, 0.88)]
+      : [this.add.circle(0, -36, 3, 0xffffff, 0.88), this.add.circle(0, 36, 3, 0xffffff, 0.88)];
+
+    container.add([corona, secondary, primary, ...ends]);
+    this.tweens.add({ targets: corona, alpha: 0.22, scale: 1.08, yoyo: true, repeat: -1, duration: 380 });
+    this.tweens.add({ targets: [primary, ...ends], alpha: 0.35, yoyo: true, repeat: -1, duration: 150 });
+    this.tweens.add({ targets: secondary, alpha: 0.88, yoyo: true, repeat: -1, duration: 210, delay: 70 });
+  }
+
+  private drawElectricPair(
+    graphics: Phaser.GameObjects.Graphics,
+    horizontal: boolean,
+    phase: number,
+    color: number,
+    alpha: number
+  ) {
+    graphics.lineStyle(3, color, alpha);
+    if (horizontal) {
+      this.drawElectricBolt(graphics, -34, -27, 34, -25, phase);
+      this.drawElectricBolt(graphics, -34, 27, 34, 25, phase + 1);
+      return;
+    }
+    this.drawElectricBolt(graphics, -28, -34, -26, 34, phase);
+    this.drawElectricBolt(graphics, 28, -34, 26, 34, phase + 1);
+  }
+
+  private drawElectricBolt(
+    graphics: Phaser.GameObjects.Graphics,
+    startX: number,
+    startY: number,
+    endX: number,
+    endY: number,
+    phase: number
+  ) {
+    graphics.beginPath();
+    graphics.moveTo(startX, startY);
+    const segments = 6;
+    for (let index = 1; index < segments; index += 1) {
+      const progress = index / segments;
+      const x = Phaser.Math.Linear(startX, endX, progress);
+      const y = Phaser.Math.Linear(startY, endY, progress);
+      const offset = (index + phase) % 2 === 0 ? 5 : -5;
+      const horizontal = Math.abs(endX - startX) >= Math.abs(endY - startY);
+      graphics.lineTo(horizontal ? x : x + offset, horizontal ? y + offset : y);
+    }
+    graphics.lineTo(endX, endY);
+    graphics.strokePath();
   }
 
   private onBoardPointerDown(pointer: Phaser.Input.Pointer) {

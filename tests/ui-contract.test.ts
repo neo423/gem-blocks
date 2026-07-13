@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest";
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
 const scene = readFileSync(new URL("../src/game/match3/Match3Scene.ts", import.meta.url), "utf8");
+const gemArt = readFileSync(new URL("../src/game/match3/gemArt.ts", import.meta.url), "utf8");
 const main = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8");
 
 describe("Gem Kingdom UI contract", () => {
@@ -65,5 +66,13 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("@keyframes preview-gem-drop");
     expect(css).toContain(".gem-legend.is-refilling");
     expect(css).toContain(".control-button::after");
+  });
+
+  test("keeps resolving controls solid and presents special gems as powered jewels", () => {
+    expect(css).toMatch(/\.control-button:disabled\s*\{[^}]*opacity:\s*1/s);
+    expect(scene).toContain("drawElectricAura");
+    expect(scene).not.toContain("horizontal ? 66 : 11");
+    expect(gemArt).toContain("drawRoyalSetting");
+    expect(gemArt).toContain("0xffd45b");
   });
 });

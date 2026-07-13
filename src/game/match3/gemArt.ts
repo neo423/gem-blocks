@@ -75,29 +75,77 @@ export function createGemTextures(scene: Phaser.Scene, tier: SkinTier) {
 function drawUltimateTexture(scene: Phaser.Scene, key: string, tier: SkinTier) {
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
   const center = GEM_TEXTURE_SIZE / 2;
-  const points = shapePoints("brilliant", center, center);
-  const colors = [0xff477e, 0xffd166, 0x27e6b1, 0x35b9ff, 0xa855f7, 0xf7fdff];
-
-  g.fillStyle(0x000000, 0.42);
-  g.fillEllipse(center + 2, center + 15, 70, 22);
-  g.fillStyle(0xeefaff, 0.98);
-  g.lineStyle(5, 0x5f3bc5, 0.96);
-  g.fillPoints(points, true);
-  g.strokePoints(points, true);
-  points.forEach((point, index) => {
-    const next = points[(index + 1) % points.length];
-    g.fillStyle(colors[index % colors.length], 0.66);
-    g.fillPoints([point, next, new Phaser.Math.Vector2(center, center + 2)], true);
-  });
-  g.fillStyle(0xffffff, 0.72);
-  g.fillCircle(center, center, 15);
-  g.lineStyle(3, 0xffffff, 0.86);
-  g.strokeCircle(center, center, 37 + tier.sparkle * 2);
-  g.lineStyle(2, 0x8ff7ff, 0.74);
-  g.strokeCircle(center, center, 42);
-  drawGlints(g, center, center, tier);
+  drawRoyalSetting(g, center, center, tier);
   g.generateTexture(key, GEM_TEXTURE_SIZE, GEM_TEXTURE_SIZE);
   g.destroy();
+}
+
+function drawRoyalSetting(g: Phaser.GameObjects.Graphics, cx: number, cy: number, tier: SkinTier) {
+  const gold = 0xffd45b;
+  const goldLight = 0xfff1a0;
+  const goldDeep = 0x8f4608;
+  const satelliteColors = [0xff477e, 0xffd166, 0x27e6b1, 0x35b9ff, 0xa855f7, 0xf7fdff];
+
+  g.fillStyle(0x000000, 0.44);
+  g.fillEllipse(cx + 2, cy + 16, 82, 24);
+  g.fillStyle(goldDeep, 1);
+  g.fillCircle(cx, cy, 45);
+  g.lineStyle(3, goldLight, 0.94);
+  g.strokeCircle(cx, cy, 44);
+  g.fillStyle(0x4b160d, 1);
+  g.fillCircle(cx, cy, 39);
+  g.lineStyle(4, gold, 0.96);
+  g.strokeCircle(cx, cy, 38);
+  g.lineStyle(2, 0x5c2707, 0.9);
+  g.strokeCircle(cx, cy, 34);
+
+  for (let index = 0; index < 8; index += 1) {
+    const angle = Phaser.Math.DegToRad(index * 45 - 90);
+    const x = cx + Math.cos(angle) * 36;
+    const y = cy + Math.sin(angle) * 36;
+    const radialX = Math.cos(angle) * 5;
+    const radialY = Math.sin(angle) * 5;
+    const tangentX = -Math.sin(angle) * 4;
+    const tangentY = Math.cos(angle) * 4;
+
+    g.fillStyle(index % 2 === 0 ? goldLight : gold, 0.98);
+    g.fillPoints(
+      [
+        new Phaser.Math.Vector2(x + radialX, y + radialY),
+        new Phaser.Math.Vector2(x + tangentX, y + tangentY),
+        new Phaser.Math.Vector2(x - radialX, y - radialY),
+        new Phaser.Math.Vector2(x - tangentX, y - tangentY)
+      ],
+      true
+    );
+    g.fillStyle(satelliteColors[index % satelliteColors.length], 1);
+    g.fillCircle(x, y, index % 2 === 0 ? 3.6 : 2.8);
+    g.lineStyle(1, 0xffffff, 0.82);
+    g.strokeCircle(x, y, index % 2 === 0 ? 3.6 : 2.8);
+  }
+
+  const rubyPoints = shapePoints("brilliant", cx, cy).map(
+    (point) => new Phaser.Math.Vector2(cx + (point.x - cx) * 0.64, cy + (point.y - cy) * 0.64)
+  );
+  const rubyCenter = new Phaser.Math.Vector2(cx, cy + 2);
+  const rubyColors = [0xff817d, 0xf52239, 0xa70625, 0x5c061c];
+
+  g.fillStyle(0x350513, 1);
+  g.lineStyle(4, goldLight, 0.98);
+  g.fillPoints(rubyPoints, true);
+  g.strokePoints(rubyPoints, true);
+  rubyPoints.forEach((point, index) => {
+    const next = rubyPoints[(index + 1) % rubyPoints.length];
+    g.fillStyle(rubyColors[index % rubyColors.length], index % 2 === 0 ? 0.96 : 0.82);
+    g.fillPoints([point, next, rubyCenter], true);
+  });
+  g.lineStyle(1, 0xffffff, 0.5);
+  rubyPoints.forEach((point) => {
+    g.strokeLineShape(new Phaser.Geom.Line(point.x, point.y, rubyCenter.x, rubyCenter.y));
+  });
+  g.fillStyle(0xffffff, 0.82);
+  g.fillEllipse(cx - 10, cy - 12, 13, 5);
+  g.fillCircle(cx + 12, cy - 17, 3 + tier.sparkle);
 }
 
 function drawGemTexture(scene: Phaser.Scene, key: string, material: GemMaterial, tier: SkinTier) {

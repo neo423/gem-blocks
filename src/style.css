@@ -436,6 +436,12 @@ canvas {
     0 5px 9px rgba(0, 46, 67, 0.32);
 }
 
+.control-button:disabled {
+  cursor: not-allowed;
+  filter: brightness(0.94) saturate(0.96);
+  opacity: 1;
+}
+
 .control-button::after {
   position: absolute;
   top: -8px;
