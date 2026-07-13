@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
+const scene = readFileSync(new URL("../src/game/match3/Match3Scene.ts", import.meta.url), "utf8");
 
 describe("Royal Vault UI contract", () => {
   test("renders the approved HUD with one countdown", () => {
@@ -26,5 +28,12 @@ describe("Royal Vault UI contract", () => {
     expect(html).toContain('id="overlay" class="overlay" data-mode="menu"');
     expect(html).toContain('id="rules-button"');
     expect(html).toContain('id="rules-panel"');
+  });
+
+  test("keeps the gameplay stage compact on mobile", () => {
+    expect(scene).toContain("const HEIGHT = 790;");
+    expect(scene).toContain("const STAGE_FOOTER_HEIGHT = 60;");
+    expect(scene).toContain("const BOARD_Y = 100;");
+    expect(css).toContain("transform: translateY(5px);");
   });
 });

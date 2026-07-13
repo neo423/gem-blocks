@@ -39,6 +39,7 @@ type RenderBoardOptions = { dropIn?: boolean };
 
 const WIDTH = 560;
 const HEIGHT = 790;
+const STAGE_FOOTER_HEIGHT = 60;
 const GEM_SIZE = 56;
 const GAP = 6;
 const BOARD_PAD = 16;
@@ -46,7 +47,7 @@ const INPUT_FORGIVENESS = 12;
 const BOARD_PIXEL_WIDTH = BOARD_COLS * GEM_SIZE + (BOARD_COLS - 1) * GAP;
 const BOARD_PIXEL_HEIGHT = BOARD_ROWS * GEM_SIZE + (BOARD_ROWS - 1) * GAP;
 const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
-const BOARD_Y = 66;
+const BOARD_Y = 100;
 const SAVE_KEY = "gem-blocks-save-v1";
 
 export class Match3Scene extends Phaser.Scene {
@@ -176,14 +177,9 @@ export class Match3Scene extends Phaser.Scene {
     g.fillStyle(0x071923, 0.96);
     g.fillRect(0, 0, WIDTH, 74);
     g.fillStyle(0x10141c, 0.96);
-    g.fillRect(0, HEIGHT - 92, WIDTH, 92);
-
-    for (let i = 0; i < 26; i += 1) {
-      const x = 14 + i * 34;
-      const y = HEIGHT - 72 + (i % 3) * 14;
-      g.lineStyle(1, i % 2 === 0 ? 0xd6b25e : 0x00d7e8, i % 2 === 0 ? 0.24 : 0.12);
-      g.strokeTriangle(x, y + 22, x + 22, y - 4, x + 45, y + 22);
-    }
+    g.fillRect(0, HEIGHT - STAGE_FOOTER_HEIGHT, WIDTH, STAGE_FOOTER_HEIGHT);
+    g.lineStyle(1, 0xd6b25e, 0.18);
+    g.lineBetween(0, HEIGHT - STAGE_FOOTER_HEIGHT + 1, WIDTH, HEIGHT - STAGE_FOOTER_HEIGHT + 1);
 
     for (let i = 0; i < 18; i += 1) {
       const x = 22 + i * 40;
