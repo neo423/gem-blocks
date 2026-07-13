@@ -12,8 +12,6 @@
   <a href="https://gem-blocks.pages.dev/"><strong>立即線上遊玩</strong></a>
   ·
   <a href="#遊戲玩法">遊戲玩法</a>
-  ·
-  <a href="#本機開發">本機開發</a>
 </p>
 
 <p align="center">
@@ -82,7 +80,8 @@
 - Web Audio API：即時背景音樂與遊戲音效。
 - Local Storage：保存最佳分數、最高關卡與音樂偏好。
 
-## 本機開發
+<details>
+<summary><strong>開發者資訊（本機執行、測試與建置）</strong></summary>
 
 ### 環境需求
 
@@ -96,26 +95,7 @@ pnpm install
 pnpm dev
 ```
 
-開啟：
-
-```text
-http://127.0.0.1:5173/
-```
-
-若要讓同一個區域網路內的手機連線測試：
-
-```bash
-pnpm dev:mobile
-```
-
-Windows 環境若一般 Vite 啟動不穩定，也可使用：
-
-```bash
-pnpm dev:stable
-pnpm dev:mobile:stable
-```
-
-## 測試與建置
+### 測試與建置
 
 ```bash
 pnpm test -- --run
@@ -123,6 +103,8 @@ pnpm build
 ```
 
 正式建置結果會輸出至 `dist/`。
+
+</details>
 
 ## 專案結構
 
