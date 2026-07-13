@@ -45,7 +45,10 @@ const ui = {
   overlayTitle: document.querySelector<HTMLHeadingElement>("#overlay-title")!,
   overlayText: document.querySelector<HTMLParagraphElement>("#overlay-text")!,
   overlayBig: document.querySelector<HTMLDivElement>("#overlay-big")!,
-  overlayButton: document.querySelector<HTMLButtonElement>("#overlay-button")!
+  overlayButton: document.querySelector<HTMLButtonElement>("#overlay-button")!,
+  rulesButton: document.querySelector<HTMLButtonElement>("#rules-button")!,
+  rulesPanel: document.querySelector<HTMLElement>("#rules-panel")!,
+  rulesClose: document.querySelector<HTMLButtonElement>("#rules-close")!
 };
 
 let overlayMode: OverlayState["mode"] = "menu";
@@ -77,6 +80,14 @@ ui.hint.addEventListener("click", () => dispatchAction("hint"));
 ui.shuffle.addEventListener("click", () => dispatchAction("shuffle"));
 ui.pause.addEventListener("click", () => dispatchAction("pause"));
 ui.sound.addEventListener("click", () => dispatchAction("sound"));
+ui.rulesButton.addEventListener("click", () => {
+  ui.rulesPanel.classList.remove("hidden");
+  ui.rulesClose.focus();
+});
+ui.rulesClose.addEventListener("click", closeRules);
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !ui.rulesPanel.classList.contains("hidden")) closeRules();
+});
 ui.overlayButton.addEventListener("click", () => {
   if (overlayMode === "menu") {
     dispatchAction("start");
@@ -124,12 +135,19 @@ function updateUi(state: UiState) {
 
 function showOverlay(state: OverlayState) {
   overlayMode = state.mode;
+  ui.rulesPanel.classList.add("hidden");
+  ui.overlay.dataset.mode = state.mode;
   ui.overlayTitle.textContent = state.title;
   ui.overlayText.textContent = state.text;
   ui.overlayBig.textContent = state.big ?? "";
   ui.overlayBig.classList.toggle("hidden", !state.big);
-  ui.overlayButton.textContent = state.button;
+  ui.overlayButton.textContent = state.mode === "menu" ? "開始遊戲" : state.button;
   ui.overlay.classList.remove("hidden");
+}
+
+function closeRules() {
+  ui.rulesPanel.classList.add("hidden");
+  ui.rulesButton.focus();
 }
 
 function formatTime(seconds: number) {

@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#06131a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%2311d6a0' d='M32 3 58 22 44 61H20L6 22z'/%3E%3Cpath fill='%23fff7d8' fill-opacity='.72' d='M32 3 44 22 32 61 20 22z'/%3E%3C/svg%3E" />
     <title>寶石方塊</title>
   </head>
@@ -65,14 +68,29 @@
         <button id="sound-btn" class="control-button" type="button" aria-pressed="true">音樂 開</button>
       </section>
 
-      <section id="overlay" class="overlay">
+      <section id="overlay" class="overlay" data-mode="menu">
         <div class="overlay-card">
-          <img class="overlay-logo" src="/assets/gem-blocks-logo.png" alt="" />
+          <img class="overlay-logo" src="/assets/gem-blocks-logo.png" alt="寶石方塊" />
           <h1 id="overlay-title">寶石方塊</h1>
           <p id="overlay-text">交換相鄰寶石，湊三連以上消除。</p>
           <div id="overlay-big" class="overlay-big hidden"></div>
-          <button id="overlay-button" type="button">開始開採</button>
+          <div class="menu-actions">
+            <button id="overlay-button" type="button">開始遊戲</button>
+            <button id="rules-button" type="button">遊戲規則</button>
+          </div>
         </div>
+        <section id="rules-panel" class="rules-panel hidden" role="dialog" aria-modal="true" aria-labelledby="rules-title">
+          <div class="rules-card">
+            <h2 id="rules-title">遊戲規則</h2>
+            <ul>
+              <li>交換相鄰寶石，連成三顆以上即可消除。</li>
+              <li>在 2 分 30 秒內達成本關目標分數。</li>
+              <li>連鎖消除與一次消除更多寶石可獲得更高分。</li>
+              <li>找不到步數時，每局可使用三次洗牌。</li>
+            </ul>
+            <button id="rules-close" type="button">返回</button>
+          </div>
+        </section>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

@@ -19,4 +19,12 @@ describe("Royal Vault UI contract", () => {
     expect(html).toContain('id="pause-btn"');
     expect(html).toContain('id="sound-btn"');
   });
+
+  test("uses an iPhone-safe full-screen start menu", () => {
+    expect(html).toContain('name="theme-color" content="#06131a"');
+    expect(html).toContain('name="apple-mobile-web-app-status-bar-style" content="black-translucent"');
+    expect(html).toContain('id="overlay" class="overlay" data-mode="menu"');
+    expect(html).toContain('id="rules-button"');
+    expect(html).toContain('id="rules-panel"');
+  });
 });
