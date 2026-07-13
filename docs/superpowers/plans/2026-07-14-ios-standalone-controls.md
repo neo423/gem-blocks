@@ -4,7 +4,7 @@
 
 **Goal:** 讓 iPhone 獨立 Web App 的遊戲背景覆蓋完整螢幕，並固定使用核准參考圖的四顆寶石控制按鈕。
 
-**Architecture:** 由 CSS `100dvh` 管理畫面高度，頂部保留 safe-area inset，底部則直接繪製到螢幕邊緣。棋盤容器可在高度不足時縮小，其他 HUD 與控制元件保持固定。按鈕事件不變，外觀改由核准參考圖 sprite 與獨立動態文字層組成。
+**Architecture:** 由固定定位的根容器 `position: fixed; inset: 0` 管理完整畫面，頂部保留 safe-area inset，底部直接繪製到螢幕邊緣，不再依賴 iPhone 獨立模式可能縮短的 `100dvh`。棋盤容器可在高度不足時縮小，其他 HUD 與控制元件保持固定。按鈕事件不變，外觀改由核准參考圖 sprite 與獨立動態文字層組成。
 
 **Tech Stack:** TypeScript、CSS、Vite、Vitest、Phaser 3
 
@@ -28,7 +28,7 @@
 
 - [ ] **Step 1: Write the failing test**
 
-新增測試，要求 `main.ts` 不包含 `style.setProperty("--app-height"`，並要求 CSS 包含 `min-height: 100dvh`、三層共用背景、四欄控制列、雙層金框、玻璃高光、頂部寶石和大型圖示尺寸。
+新增測試，要求 `main.ts` 不包含 `style.setProperty("--app-height"`，並要求 CSS 以固定四邊根容器覆蓋完整畫面、三層共用背景、四欄控制列、雙層金框、玻璃高光、頂部寶石和大型圖示尺寸。
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -44,7 +44,7 @@ Expected: FAIL，因為 `src/main.ts` 仍覆寫 `--app-height`，且完整背景
 - Test: `tests/ui-contract.test.ts`
 
 **Interfaces:**
-- Consumes: CSS `100dvh` 與既有 safe-area inset。
+- Consumes: 固定定位根容器與既有 safe-area inset。
 - Produces: 不依賴 JavaScript viewport 高度的完整 iPhone 獨立 Web App 畫面。
 
 - [ ] **Step 1: Remove the JavaScript viewport override**
@@ -53,7 +53,7 @@ Expected: FAIL，因為 `src/main.ts` 仍覆寫 `--app-height`，且完整背景
 
 - [ ] **Step 2: Make CSS own the full-screen height**
 
-讓 `.game-shell` 使用 `height: 100dvh; min-height: 100dvh;`，並讓 `html`、`body`、`.game-shell` 共用 `/assets/gem-kingdom-game-bg.png` 的置中 cover 背景。
+讓 `.game-shell` 使用 `position: fixed; inset: 0;`，移除 `height/min-height: 100dvh`，並讓 `html`、`body`、`.game-shell` 共用 `/assets/gem-kingdom-game-bg.png` 的置中 cover 背景。
 
 - [ ] **Step 3: Keep the complete control row inside the viewport**
 

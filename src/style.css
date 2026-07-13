@@ -13,10 +13,15 @@
 }
 
 html,
-body,
-#app {
+body {
   width: 100%;
   height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
   margin: 0;
 }
 
@@ -83,11 +88,10 @@ button:disabled {
 }
 
 .game-shell {
-  position: relative;
+  position: fixed;
+  inset: 0;
   display: flex;
   width: 100%;
-  height: 100dvh;
-  min-height: 100dvh;
   flex-direction: column;
   align-items: center;
   gap: 6px;
@@ -433,9 +437,9 @@ canvas {
   border-radius: 22%;
   color: #fff;
   background-color: transparent;
-  background-image: url("/assets/gem-control-buttons-reference.jpg");
   background-repeat: no-repeat;
-  background-size: 473.684% 842.105%;
+  background-position: center;
+  background-size: 116% auto;
   box-shadow: 0 5px 9px rgba(0, 41, 55, 0.34);
   isolation: isolate;
 }
@@ -481,22 +485,22 @@ canvas {
 }
 
 #hint-btn {
-  background-position: 5.46% 95.48%;
+  background-image: url("/assets/controls/hint-button.png");
 }
 
 #shuffle-btn {
   --control-label-bg: linear-gradient(180deg, #0a82c4, #075b9d);
-  background-position: 35.04% 95.48%;
+  background-image: url("/assets/controls/shuffle-button.png");
 }
 
 #pause-btn {
   --control-label-bg: linear-gradient(180deg, #35aa17, #1d7e0d);
-  background-position: 64.79% 95.48%;
+  background-image: url("/assets/controls/pause-button.png");
 }
 
 #sound-btn {
   --control-label-bg: linear-gradient(180deg, #ed8613, #c45b0b);
-  background-position: 94.54% 95.48%;
+  background-image: url("/assets/controls/sound-button.png");
 }
 
 #sound-btn.off {

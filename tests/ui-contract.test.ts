@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 
 const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
@@ -7,6 +7,7 @@ const scene = readFileSync(new URL("../src/game/match3/Match3Scene.ts", import.m
 const gemArt = readFileSync(new URL("../src/game/match3/gemArt.ts", import.meta.url), "utf8");
 const main = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8");
 const manifest = readFileSync(new URL("../public/manifest.webmanifest", import.meta.url), "utf8");
+const controlAssets = ["hint-button.png", "shuffle-button.png", "pause-button.png", "sound-button.png"];
 
 describe("Gem Kingdom UI contract", () => {
   test("renders the approved HUD with one countdown", () => {
@@ -42,7 +43,10 @@ describe("Gem Kingdom UI contract", () => {
   test("covers the full iPhone standalone viewport with the game background", () => {
     expect(main).not.toContain('style.setProperty("--app-height"');
     expect(main).not.toContain('visualViewport?.addEventListener("resize"');
-    expect(css).toMatch(/\.game-shell\s*\{[^}]*height:\s*100dvh[^}]*min-height:\s*100dvh/s);
+    expect(css).toMatch(/html,\s*body\s*\{[^}]*height:\s*100%[^}]*overflow:\s*hidden/s);
+    expect(css).toMatch(/\.game-shell\s*\{[^}]*position:\s*fixed[^}]*inset:\s*0/s);
+    expect(css).not.toMatch(/\.game-shell\s*\{[^}]*height:\s*100dvh/s);
+    expect(css).not.toMatch(/\.game-shell\s*\{[^}]*min-height:\s*100dvh/s);
     expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.png"\)/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*padding-bottom:\s*0/s);
     expect(css).toMatch(/#game-wrap\s*\{[^}]*flex:\s*0 1 auto/s);
@@ -73,9 +77,13 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("#sound-btn {");
     expect(css).toMatch(/\.control-button\s*\{[^}]*aspect-ratio:\s*1\s*\/\s*1/s);
     expect(css).toMatch(/\.bottom-controls\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
-    expect(css).toContain('background-image: url("/assets/gem-control-buttons-reference.jpg")');
-    expect(css).toMatch(/#hint-btn\s*\{[^}]*background-position:\s*5\.46% 95\.48%/s);
-    expect(css).toMatch(/#sound-btn\s*\{[^}]*background-position:\s*94\.54% 95\.48%/s);
+    controlAssets.forEach((asset) => {
+      expect(existsSync(new URL(`../public/assets/controls/${asset}`, import.meta.url))).toBe(true);
+      expect(css).toContain(`url("/assets/controls/${asset}")`);
+    });
+    expect(css).not.toContain("gem-control-buttons-reference.jpg");
+    expect(css).toMatch(/#hint-btn\s*\{[^}]*background-image:\s*url\("\/assets\/controls\/hint-button\.png"\)/s);
+    expect(css).toMatch(/#sound-btn\s*\{[^}]*background-image:\s*url\("\/assets\/controls\/sound-button\.png"\)/s);
     expect(css).toMatch(/\.control-label\s*\{[^}]*position:\s*absolute/s);
   });
 
