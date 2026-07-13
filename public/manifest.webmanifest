@@ -10,10 +10,10 @@
   "theme_color": "#090a12",
   "icons": [
     {
-      "src": "/gem-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/assets/gem-blocks-app-icon.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

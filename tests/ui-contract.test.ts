@@ -6,6 +6,7 @@ const css = readFileSync(new URL("../src/style.css", import.meta.url), "utf8");
 const scene = readFileSync(new URL("../src/game/match3/Match3Scene.ts", import.meta.url), "utf8");
 const gemArt = readFileSync(new URL("../src/game/match3/gemArt.ts", import.meta.url), "utf8");
 const main = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8");
+const manifest = readFileSync(new URL("../public/manifest.webmanifest", import.meta.url), "utf8");
 
 describe("Gem Kingdom UI contract", () => {
   test("renders the approved HUD with one countdown", () => {
@@ -30,6 +31,14 @@ describe("Gem Kingdom UI contract", () => {
     expect(html).toContain('id="overlay" class="overlay" data-mode="menu"');
     expect(html).toContain('id="rules-button"');
     expect(html).toContain('id="rules-panel"');
+  });
+
+  test("publishes the approved artwork as the browser and iPhone home-screen icon", () => {
+    expect(html).toContain('rel="manifest" href="/manifest.webmanifest"');
+    expect(html).toContain('rel="apple-touch-icon" href="/assets/gem-blocks-app-icon.png"');
+    expect(html).toContain('rel="icon" type="image/png" href="/assets/gem-blocks-app-icon.png"');
+    expect(manifest).toContain('"src": "/assets/gem-blocks-app-icon.png"');
+    expect(manifest).toContain('"sizes": "1254x1254"');
   });
 
   test("keeps the gameplay stage compact on mobile", () => {
