@@ -33,7 +33,9 @@ describe("Gem Kingdom UI contract", () => {
   });
 
   test("uses an iPhone-safe full-screen start menu", () => {
-    expect(html).toContain('name="theme-color" content="#159ed9"');
+    expect(html).toContain('name="theme-color" content="#7aa82a"');
+    expect(css).toContain("--ios-bottom-fill: #7aa82a");
+    expect(css).toMatch(/html,\s*body\s*\{[^}]*background-color:\s*var\(--ios-bottom-fill\)/s);
     expect(html).toContain('name="apple-mobile-web-app-status-bar-style" content="black-translucent"');
     expect(html).toContain('id="overlay" class="overlay" data-mode="menu"');
     expect(html).toContain('id="rules-button"');
@@ -76,6 +78,8 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("#pause-btn {");
     expect(css).toContain("#sound-btn {");
     expect(css).toMatch(/\.control-button\s*\{[^}]*aspect-ratio:\s*1\s*\/\s*1/s);
+    expect(css).toMatch(/\.control-button\s*\{[^}]*background-position:\s*center top[^}]*background-size:\s*112% auto/s);
+    expect(css).not.toMatch(/\.control-button\s*\{[^}]*background-size:\s*116% auto/s);
     expect(css).toMatch(/\.bottom-controls\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
     controlAssets.forEach((asset) => {
       expect(existsSync(new URL(`../public/assets/controls/${asset}`, import.meta.url))).toBe(true);

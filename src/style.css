@@ -8,6 +8,7 @@
   --cyan-glow: #75e8ff;
   --text-main: #ffffff;
   --text-muted: #d7efff;
+  --ios-bottom-fill: #7aa82a;
   --border-soft: rgba(255, 205, 75, 0.72);
   --panel-shadow: inset 0 2px 7px rgba(0, 22, 54, 0.76), 0 3px 0 rgba(92, 45, 5, 0.72), 0 6px 14px rgba(0, 47, 85, 0.32);
 }
@@ -28,7 +29,7 @@ body {
 html,
 body {
   min-height: 100%;
-  background-color: #159ed9;
+  background-color: var(--ios-bottom-fill);
   background-image: url("/assets/gem-kingdom-game-bg.png");
   background-position: center;
   background-size: cover;
@@ -36,7 +37,7 @@ body {
 }
 
 html {
-  background-color: #159ed9;
+  background-color: var(--ios-bottom-fill);
   color-scheme: dark;
 }
 
@@ -49,7 +50,7 @@ html {
 body {
   overflow: hidden;
   color: var(--text-main);
-  background-color: #159ed9;
+  background-color: var(--ios-bottom-fill);
   background-image: url("/assets/gem-kingdom-game-bg.png");
   background-position: center;
   background-size: cover;
@@ -438,8 +439,8 @@ canvas {
   color: #fff;
   background-color: transparent;
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: 116% auto;
+  background-position: center top;
+  background-size: 112% auto;
   box-shadow: 0 5px 9px rgba(0, 41, 55, 0.34);
   isolation: isolate;
 }
