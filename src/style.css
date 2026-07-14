@@ -425,43 +425,44 @@ canvas {
   align-items: end;
 }
 
-.control-button {
-  --control-label-bg: linear-gradient(180deg, #7419bd, #520987);
+.controls-dock {
   position: relative;
   display: grid;
-  min-width: 0;
-  min-height: 0;
-  aspect-ratio: 1 / 1;
+  width: min(calc(100% + 12px), 602px);
+  aspect-ratio: 3 / 1;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.4%;
+  align-items: end;
+  margin-right: -6px;
+  margin-left: -6px;
+  padding: 4.5% 2.4% 1.5%;
   overflow: hidden;
+  background: url("/assets/controls/control-dock-bg.png") center bottom / cover no-repeat;
+}
+
+.control-button {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
   padding: 0;
   border: 0;
   border-radius: 22%;
   color: #fff;
   background-color: transparent;
   background-repeat: no-repeat;
-  background-position: center top;
-  background-size: 112% auto;
-  box-shadow: 0 5px 9px rgba(0, 41, 55, 0.34);
-  isolation: isolate;
+  background-position: center;
+  background-size: contain;
+  filter: drop-shadow(0 5px 5px rgba(0, 45, 45, 0.34));
+  transform-origin: 50% 78%;
+  transition: transform 120ms ease-out, filter 120ms ease-out;
 }
 
 .control-button:disabled {
   cursor: not-allowed;
-  filter: brightness(0.93) saturate(0.88);
+  filter: brightness(0.92) saturate(0.78) drop-shadow(0 3px 4px rgba(0, 45, 45, 0.25));
   opacity: 1;
-}
-
-.control-button::before {
-  position: absolute;
-  right: 11%;
-  bottom: 9%;
-  left: 11%;
-  z-index: 1;
-  height: 27%;
-  border-radius: 0 0 14% 14%;
-  background: var(--control-label-bg);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  content: "";
 }
 
 .control-label {
@@ -486,31 +487,35 @@ canvas {
 }
 
 #hint-btn {
-  background-image: url("/assets/controls/hint-button.png");
+  background-image: url("/assets/controls/hint-button-base.png");
 }
 
 #shuffle-btn {
-  --control-label-bg: linear-gradient(180deg, #0a82c4, #075b9d);
-  background-image: url("/assets/controls/shuffle-button.png");
+  background-image: url("/assets/controls/shuffle-button-base.png");
 }
 
 #pause-btn {
-  --control-label-bg: linear-gradient(180deg, #35aa17, #1d7e0d);
-  background-image: url("/assets/controls/pause-button.png");
+  background-image: url("/assets/controls/pause-button-base.png");
 }
 
 #sound-btn {
-  --control-label-bg: linear-gradient(180deg, #ed8613, #c45b0b);
-  background-image: url("/assets/controls/sound-button.png");
+  background-image: url("/assets/controls/sound-button-base.png");
 }
 
 #sound-btn.off {
   filter: brightness(0.88) saturate(0.84);
 }
 
-.control-button:active:not(:disabled) {
-  box-shadow: 0 2px 5px rgba(0, 41, 55, 0.38);
-  transform: scale(0.97);
+#sound-btn.off:active:not(:disabled),
+#sound-btn.off.is-pressed:not(:disabled) {
+  filter: brightness(0.78) saturate(0.8) drop-shadow(0 2px 3px rgba(0,45,45,.3));
+}
+
+.control-button:active:not(:disabled),
+.control-button.is-pressed:not(:disabled) {
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5);
+  filter: brightness(0.9) saturate(0.94) drop-shadow(0 2px 3px rgba(0, 45, 45, 0.3));
+  transform: translateY(3px) scale(0.96);
 }
 
 #combo-toast {
@@ -773,8 +778,7 @@ canvas {
   }
 
   .top-hud,
-  .gem-legend,
-  .bottom-controls {
+  .gem-legend {
     width: 100%;
   }
 
@@ -842,9 +846,6 @@ canvas {
     width: 28px;
   }
 
-  .bottom-controls {
-    gap: 5px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

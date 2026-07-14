@@ -45,6 +45,7 @@ const ui = {
   shuffle: document.querySelector<HTMLButtonElement>("#shuffle-btn")!,
   shuffleLabel: document.querySelector<HTMLSpanElement>("#shuffle-label")!,
   pause: document.querySelector<HTMLButtonElement>("#pause-btn")!,
+  pauseLabel: document.querySelector<HTMLSpanElement>("#pause-label")!,
   sound: document.querySelector<HTMLButtonElement>("#sound-btn")!,
   soundLabel: document.querySelector<HTMLSpanElement>("#sound-label")!,
   overlay: document.querySelector<HTMLDivElement>("#overlay")!,
@@ -73,6 +74,19 @@ window.addEventListener("gem-overlay", (event) => {
 window.addEventListener("gem-overlay-hide", () => {
   ui.overlay.classList.add("hidden");
 });
+
+function bindPressFeedback(button: HTMLButtonElement): void {
+  const release = () => button.classList.remove("is-pressed");
+
+  button.addEventListener("pointerdown", () => {
+    if (!button.disabled) button.classList.add("is-pressed");
+  });
+  button.addEventListener("pointerup", release);
+  button.addEventListener("pointercancel", release);
+  button.addEventListener("pointerleave", release);
+}
+
+[ui.hint, ui.shuffle, ui.pause, ui.sound].forEach(bindPressFeedback);
 
 ui.hint.addEventListener("click", () => dispatchAction("hint"));
 ui.shuffle.addEventListener("click", () => dispatchAction("shuffle"));
@@ -120,6 +134,7 @@ function updateUi(state: UiState) {
   ui.shuffle.disabled = state.shufflesLeft <= 0 || state.state !== "playing";
   ui.hint.disabled = state.state !== "playing";
   ui.pause.disabled = state.state !== "playing";
+  ui.pauseLabel.textContent = state.state === "paused" ? "繼續" : "暫停";
   ui.soundLabel.textContent = state.audioEnabled ? "音樂 開" : "音樂 關";
   ui.sound.classList.toggle("off", !state.audioEnabled);
   ui.sound.setAttribute("aria-pressed", String(state.audioEnabled));

@@ -8,6 +8,12 @@ const gemArt = readFileSync(new URL("../src/game/match3/gemArt.ts", import.meta.
 const main = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8");
 const manifest = readFileSync(new URL("../public/manifest.webmanifest", import.meta.url), "utf8");
 const controlAssets = ["hint-button.png", "shuffle-button.png", "pause-button.png", "sound-button.png"];
+const interactiveControlAssets = [
+  "hint-button-base.png",
+  "shuffle-button-base.png",
+  "pause-button-base.png",
+  "sound-button-base.png",
+];
 
 describe("Gem Kingdom UI contract", () => {
   test("renders the approved HUD with one countdown", () => {
@@ -30,6 +36,15 @@ describe("Gem Kingdom UI contract", () => {
     expect(html).toContain('id="sound-label" class="control-label"');
     expect(main).toContain("ui.shuffleLabel.textContent");
     expect(main).toContain("ui.soundLabel.textContent");
+    expect(main).toContain('ui.hint.addEventListener("click", () => dispatchAction("hint"))');
+    expect(main).toContain('ui.shuffle.addEventListener("click", () => dispatchAction("shuffle"))');
+    expect(main).toContain('ui.pause.addEventListener("click", () => dispatchAction("pause"))');
+    expect(main).toContain('ui.sound.addEventListener("click", () => dispatchAction("sound"))');
+  });
+
+  test("updates the pause control label from the current game state", () => {
+    expect(main).toContain('pauseLabel: document.querySelector<HTMLSpanElement>("#pause-label")!');
+    expect(main).toContain('ui.pauseLabel.textContent = state.state === "paused" ? "繼續" : "暫停";');
   });
 
   test("uses an iPhone-safe full-screen start menu", () => {
@@ -78,17 +93,44 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toContain("#pause-btn {");
     expect(css).toContain("#sound-btn {");
     expect(css).toMatch(/\.control-button\s*\{[^}]*aspect-ratio:\s*1\s*\/\s*1/s);
-    expect(css).toMatch(/\.control-button\s*\{[^}]*background-position:\s*center top[^}]*background-size:\s*112% auto/s);
-    expect(css).not.toMatch(/\.control-button\s*\{[^}]*background-size:\s*116% auto/s);
     expect(css).toMatch(/\.bottom-controls\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
     controlAssets.forEach((asset) => {
       expect(existsSync(new URL(`../public/assets/controls/${asset}`, import.meta.url))).toBe(true);
-      expect(css).toContain(`url("/assets/controls/${asset}")`);
     });
     expect(css).not.toContain("gem-control-buttons-reference.jpg");
-    expect(css).toMatch(/#hint-btn\s*\{[^}]*background-image:\s*url\("\/assets\/controls\/hint-button\.png"\)/s);
-    expect(css).toMatch(/#sound-btn\s*\{[^}]*background-image:\s*url\("\/assets\/controls\/sound-button\.png"\)/s);
     expect(css).toMatch(/\.control-label\s*\{[^}]*position:\s*absolute/s);
+  });
+
+  test("anchors four live controls to one stable artwork dock", () => {
+    expect(html).toContain('class="bottom-controls controls-dock"');
+    expect(css).toContain('url("/assets/controls/control-dock-bg.png")');
+    expect(css).toMatch(/\.controls-dock\s*\{[^}]*position:\s*relative/s);
+    expect(css).toMatch(/\.controls-dock\s*\{[^}]*width:\s*min\(calc\(100%\s*\+\s*12px\),\s*602px\)/s);
+    expect(css).toMatch(/\.controls-dock\s*\{[^}]*aspect-ratio:\s*3\s*\/\s*1/s);
+    expect(css).toMatch(/\.controls-dock\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
+    expect(css).not.toContain(".control-button::before");
+
+    interactiveControlAssets.forEach((asset) => {
+      expect(existsSync(new URL(`../public/assets/controls/${asset}`, import.meta.url))).toBe(true);
+      expect(css).toContain(`url("/assets/controls/${asset}")`);
+    });
+  });
+
+  test("shows press feedback without replacing control actions", () => {
+    expect(main).toContain('button.addEventListener("pointerdown"');
+    expect(main).toContain('button.addEventListener("pointerup"');
+    expect(main).toContain('button.addEventListener("pointercancel"');
+    expect(main).toContain('button.classList.add("is-pressed")');
+    expect(main).toContain('button.classList.remove("is-pressed")');
+    expect(css).toMatch(/\.control-button\.is-pressed:not\(:disabled\)[\s\S]*transform:\s*translateY\(3px\) scale\(0\.96\)/);
+    expect(css).toMatch(/\.control-button:active:not\(:disabled\),\s*\.control-button\.is-pressed:not\(:disabled\)\s*\{[\s\S]*box-shadow:\s*inset 0 3px 8px rgba\(0, 0, 0, 0\.5\);/);
+    expect(main).toContain('ui.shuffle.addEventListener("click", () => dispatchAction("shuffle"))');
+  });
+
+  test("darkens sound-off controls while pressed", () => {
+    expect(css).toContain("#sound-btn.off:active:not(:disabled),");
+    expect(css).toContain("#sound-btn.off.is-pressed:not(:disabled) {");
+    expect(css).toContain("filter: brightness(0.78) saturate(0.8) drop-shadow(0 2px 3px rgba(0,45,45,.3));");
   });
 
   test("connects a real refill preview and transparent special-gem stage", () => {
