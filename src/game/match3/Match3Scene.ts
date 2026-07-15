@@ -1321,5 +1321,9 @@ export const MATCH3_GAME_CONFIG: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
+  fps: {
+    target: 30,
+    forceSetTimeOut: true
+  },
   scene: [Match3Scene]
 };
