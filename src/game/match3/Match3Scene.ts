@@ -260,7 +260,7 @@ export class Match3Scene extends Phaser.Scene {
   private renderBoard(options: RenderBoardOptions = {}) {
     this.selected = undefined;
     this.clearSelection();
-    this.gems.forEach((gem) => gem.destroy());
+    this.gems.forEach((gem) => this.destroyGemContainer(gem));
     this.gems.clear();
 
     for (let row = 0; row < BOARD_ROWS; row += 1) {
@@ -271,6 +271,11 @@ export class Match3Scene extends Phaser.Scene {
         }
       }
     }
+  }
+
+  private destroyGemContainer(container: Phaser.GameObjects.Container) {
+    this.tweens.killTweensOf([container, ...container.list]);
+    container.destroy();
   }
 
   private createGem(cell: Cell, value: GemValue, options: RenderBoardOptions = {}) {
@@ -740,7 +745,10 @@ export class Match3Scene extends Phaser.Scene {
         this.board[creation.row][creation.col] = ULTIMATE_GEM;
       }
       const key = cellKey(creation);
-      this.gems.get(key)?.destroy();
+      const existingGem = this.gems.get(key);
+      if (existingGem) {
+        this.destroyGemContainer(existingGem);
+      }
       this.gems.delete(key);
       this.createGem(creation, this.board[creation.row][creation.col]);
       const pulseColor = creation.special === SPECIAL_ULTIMATE ? 0xffffff : 0x8ff7ff;
@@ -792,7 +800,7 @@ export class Match3Scene extends Phaser.Scene {
               duration: fxPlan.durationMs,
               ease: "Cubic.easeIn",
               onComplete: () => {
-                gem.destroy();
+                this.destroyGemContainer(gem);
                 this.gems.delete(key);
                 finishOne();
               }

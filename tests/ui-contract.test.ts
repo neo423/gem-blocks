@@ -66,7 +66,9 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).not.toMatch(/\.game-shell\s*\{[^}]*min-height:\s*100dvh/s);
     expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.png"\)/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*padding-bottom:\s*0/s);
-    expect(css).toMatch(/#game-wrap\s*\{[^}]*flex:\s*0 1 auto/s);
+    expect(css).toMatch(/\.game-shell\s*\{[^}]*display:\s*grid/s);
+    expect(css).toMatch(/\.game-shell\s*\{[^}]*grid-template-rows:\s*auto auto minmax\(0, 1fr\) auto/s);
+    expect(css).toMatch(/#game-wrap\s*\{[^}]*flex:\s*none/s);
   });
 
   test("publishes the approved artwork as the browser and iPhone home-screen icon", () => {
@@ -81,8 +83,10 @@ describe("Gem Kingdom UI contract", () => {
     expect(scene).toContain("const HEIGHT = 700;");
     expect(scene).toContain("const BOARD_Y = 41;");
     expect(scene).not.toContain("drawBackground()");
-    expect(css).toContain("aspect-ratio: 560 / 700;");
-    expect(css).toContain("calc(80dvh - 194px)");
+    expect(css).toMatch(/#game-wrap\s*\{[^}]*height:\s*100%/s);
+    expect(css).toMatch(/#game-wrap\s*\{[^}]*aspect-ratio:\s*auto/s);
+    expect(css).toMatch(/#game\s*\{[^}]*place-items:\s*center/s);
+    expect(css).not.toContain("calc(80dvh - 194px)");
   });
 
   test("uses the bright fantasy kingdom gameplay theme", () => {

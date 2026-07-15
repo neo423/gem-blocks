@@ -91,10 +91,11 @@ button:disabled {
 .game-shell {
   position: fixed;
   inset: 0;
-  display: flex;
+  display: grid;
   width: 100%;
-  flex-direction: column;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   align-items: center;
+  justify-items: center;
   gap: 6px;
   overflow: hidden;
   padding-top: max(7px, env(safe-area-inset-top));
@@ -386,12 +387,14 @@ button:disabled {
   position: relative;
   display: grid;
   width: min(100%, 560px);
+  height: 100%;
   min-width: 0;
   min-height: 0;
-  aspect-ratio: 560 / 700;
-  flex: 0 1 auto;
+  max-height: 700px;
+  aspect-ratio: auto;
+  flex: none;
   overflow: hidden;
-  place-items: start center;
+  place-items: center;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -406,7 +409,7 @@ button:disabled {
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  place-items: start center;
+  place-items: center;
 }
 
 canvas {
@@ -805,10 +808,6 @@ canvas {
   .top-hud {
     height: 108px;
     gap: 4px;
-  }
-
-  #game-wrap {
-    width: min(100%, calc(80dvh - 194px));
   }
 
   .hud-data-panel {
