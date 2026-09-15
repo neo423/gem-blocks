@@ -30,7 +30,7 @@ html,
 body {
   min-height: 100%;
   background-color: var(--ios-bottom-fill);
-  background-image: url("/assets/gem-kingdom-game-bg.png");
+  background-image: url("/assets/gem-kingdom-game-bg.webp");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -51,7 +51,7 @@ body {
   overflow: hidden;
   color: var(--text-main);
   background-color: var(--ios-bottom-fill);
-  background-image: url("/assets/gem-kingdom-game-bg.png");
+  background-image: url("/assets/gem-kingdom-game-bg.webp");
   background-position: center;
   background-size: cover;
   font-family: Inter, "Microsoft JhengHei", "PingFang TC", sans-serif;
@@ -102,7 +102,7 @@ button:disabled {
   padding-right: 8px;
   padding-bottom: 0;
   padding-left: 8px;
-  background: url("/assets/gem-kingdom-game-bg.png") center / cover no-repeat;
+  background: url("/assets/gem-kingdom-game-bg.webp") center / cover no-repeat;
 }
 
 .top-hud,
@@ -330,7 +330,7 @@ button:disabled {
   display: block;
   width: 34px;
   aspect-ratio: 1;
-  background-image: url("/assets/gems/gem-atlas.png");
+  background-image: url("/assets/gems/gem-atlas.webp");
   background-repeat: no-repeat;
   background-size: 300% 300%;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.72));
@@ -364,6 +364,11 @@ button:disabled {
 
 .gem-legend.is-refilling .legend-gem {
   animation: preview-gem-drop 0.56s cubic-bezier(0.2, 0.9, 0.28, 1.18) both;
+}
+
+.legend-gem.is-tier-gem {
+  background-size: contain;
+  background-position: center;
 }
 
 .gem-legend.is-refilling .legend-gem:nth-child(2) { animation-delay: 35ms; }
@@ -440,7 +445,7 @@ canvas {
   margin-left: -6px;
   padding: 4.5% 2.4% 1.5%;
   overflow: hidden;
-  background: url("/assets/controls/control-dock-bg.png") center bottom / cover no-repeat;
+  background: url("/assets/controls/control-dock-bg.webp") center bottom / cover no-repeat;
 }
 
 .control-button {
@@ -490,19 +495,19 @@ canvas {
 }
 
 #hint-btn {
-  background-image: url("/assets/controls/hint-button-base.png");
+  background-image: url("/assets/controls/hint-button-base.webp");
 }
 
 #shuffle-btn {
-  background-image: url("/assets/controls/shuffle-button-base.png");
+  background-image: url("/assets/controls/shuffle-button-base.webp");
 }
 
 #pause-btn {
-  background-image: url("/assets/controls/pause-button-base.png");
+  background-image: url("/assets/controls/pause-button-base.webp");
 }
 
 #sound-btn {
-  background-image: url("/assets/controls/sound-button-base.png");
+  background-image: url("/assets/controls/sound-button-base.webp");
 }
 
 #sound-btn.off {
@@ -650,7 +655,7 @@ canvas {
   border-radius: 0;
   background:
     linear-gradient(180deg, transparent 64%, rgba(5, 45, 31, 0.08) 76%, rgba(2, 21, 18, 0.3) 100%),
-    url("/assets/gem-blocks-start-screen.png") center / cover no-repeat;
+    url("/assets/gem-blocks-start-screen.webp") center / cover no-repeat;
   box-shadow: 0 0 46px rgba(0, 0, 0, 0.72);
 }
 

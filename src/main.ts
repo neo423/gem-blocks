@@ -10,6 +10,7 @@ type UiState = {
   timeLeft: number;
   shufflesLeft: number;
   tierName: string;
+  previewImages: string[];
   bestScore: number;
   bestLevel: number;
   progress: number;
@@ -141,7 +142,12 @@ function updateUi(state: UiState) {
 
   state.nextGems.forEach((gem, index) => {
     const slot = ui.previewSlots[index];
-    if (slot) slot.dataset.gem = String(gem);
+    if (slot) {
+      slot.dataset.gem = String(gem);
+      const previewImage = state.previewImages[gem];
+      slot.classList.toggle("is-tier-gem", Boolean(previewImage));
+      slot.style.backgroundImage = previewImage ? `url("${previewImage}")` : "";
+    }
   });
   if (state.previewRevision !== renderedPreviewRevision) {
     renderedPreviewRevision = state.previewRevision;

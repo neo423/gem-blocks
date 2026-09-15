@@ -9,17 +9,17 @@ const main = readFileSync(new URL("../src/main.ts", import.meta.url), "utf8");
 const manifest = readFileSync(new URL("../public/manifest.webmanifest", import.meta.url), "utf8");
 const controlAssets = ["hint-button.png", "shuffle-button.png", "pause-button.png", "sound-button.png"];
 const interactiveControlAssets = [
-  "hint-button-base.png",
-  "shuffle-button-base.png",
-  "pause-button-base.png",
-  "sound-button-base.png",
+  "hint-button-base.webp",
+  "shuffle-button-base.webp",
+  "pause-button-base.webp",
+  "sound-button-base.webp",
 ];
 
 describe("Gem Kingdom UI contract", () => {
   test("renders the approved HUD with one countdown", () => {
     expect(html).toContain('class="top-hud"');
     expect(html).toContain('class="brand-timer-panel"');
-    expect(html).toContain('src="/assets/gem-blocks-logo.png"');
+    expect(html).toContain('src="/assets/gem-blocks-logo.webp"');
     expect(html).toContain('id="ui-target-value"');
     expect(html).toContain('class="gem-legend"');
     expect(html.match(/id="ui-time"/g)).toHaveLength(1);
@@ -64,7 +64,7 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toMatch(/\.game-shell\s*\{[^}]*position:\s*fixed[^}]*inset:\s*0/s);
     expect(css).not.toMatch(/\.game-shell\s*\{[^}]*height:\s*100dvh/s);
     expect(css).not.toMatch(/\.game-shell\s*\{[^}]*min-height:\s*100dvh/s);
-    expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.png"\)/s);
+    expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.webp"\)/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*padding-bottom:\s*0/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*display:\s*grid/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*grid-template-rows:\s*auto auto minmax\(0, 1fr\) auto/s);
@@ -73,8 +73,8 @@ describe("Gem Kingdom UI contract", () => {
 
   test("publishes the approved artwork as the browser and iPhone home-screen icon", () => {
     expect(html).not.toContain('rel="manifest"');
-    expect(html).toContain('rel="apple-touch-icon" href="/assets/gem-blocks-app-icon.png"');
-    expect(html).toContain('rel="icon" type="image/png" href="/assets/gem-blocks-app-icon.png"');
+    expect(html).toContain('rel="apple-touch-icon" sizes="180x180" href="/assets/gem-blocks-icon-180.png"');
+    expect(html).toContain('rel="icon" type="image/png" sizes="64x64" href="/assets/gem-blocks-icon-64.png"');
     expect(manifest).toContain('"src": "/assets/gem-blocks-app-icon.png"');
     expect(manifest).toContain('"sizes": "1254x1254"');
   });
@@ -90,7 +90,7 @@ describe("Gem Kingdom UI contract", () => {
   });
 
   test("uses the bright fantasy kingdom gameplay theme", () => {
-    expect(css).toContain('url("/assets/gem-kingdom-game-bg.png")');
+    expect(css).toContain('url("/assets/gem-kingdom-game-bg.webp")');
     expect(css).toContain("--hud-blue: #063d78;");
     expect(css).toContain("#hint-btn {");
     expect(css).toContain("#shuffle-btn {");
@@ -107,7 +107,7 @@ describe("Gem Kingdom UI contract", () => {
 
   test("anchors four live controls to one stable artwork dock", () => {
     expect(html).toContain('class="bottom-controls controls-dock"');
-    expect(css).toContain('url("/assets/controls/control-dock-bg.png")');
+    expect(css).toContain('url("/assets/controls/control-dock-bg.webp")');
     expect(css).toMatch(/\.controls-dock\s*\{[^}]*position:\s*relative/s);
     expect(css).toMatch(/\.controls-dock\s*\{[^}]*width:\s*min\(calc\(100%\s*\+\s*12px\),\s*602px\)/s);
     expect(css).toMatch(/\.controls-dock\s*\{[^}]*aspect-ratio:\s*3\s*\/\s*1/s);
@@ -149,7 +149,7 @@ describe("Gem Kingdom UI contract", () => {
     expect(html.match(/data-preview-slot=/g)).toHaveLength(6);
     expect(main).toContain("nextGems: number[]");
     expect(main).toContain("previewRevision: number");
-    expect(css).toContain('background-image: url("/assets/gems/gem-atlas.png");');
+    expect(css).toContain('background-image: url("/assets/gems/gem-atlas.webp");');
     expect(css).toContain('background-position: 100% 50%;');
     expect(css).toContain("@keyframes preview-gem-drop");
     expect(css).toContain(".gem-legend.is-refilling");
@@ -170,13 +170,12 @@ describe("Gem Kingdom UI contract", () => {
     expect(gemArt).toContain("0xffd45b");
   });
 
-  test("centers selection feedback and keeps the real gem atlas across every level", () => {
+  test("centers selection feedback and keeps the classic atlas for the first series", () => {
     expect(scene).toContain("this.selectionRing = this.add.circle(p.x, p.y");
     expect(scene).toContain("this.tweens.killTweensOf(this.selectionRing)");
     expect(scene).toMatch(/private renderBoard[\s\S]{0,140}this\.clearSelection\(\)/);
     expect(scene).not.toContain("gem.add(ring)");
-    expect(scene).toContain('const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);');
-    expect(scene).not.toContain('this.tier.key === "classic" &&');
+    expect(scene).toContain('const useAtlas = this.tier.key === "classic" && this.textures.get(GEM_ATLAS_KEY).has(frame);');
   });
 
   test("compensates for uneven transparent padding in every atlas gem", () => {

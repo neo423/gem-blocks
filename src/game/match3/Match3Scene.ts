@@ -4,6 +4,7 @@ import {
   BOARD_COLS,
   BOARD_ROWS,
   EMPTY_GEM,
+  GEM_COLORS,
   scoreForRemoval,
   SHUFFLES_PER_LEVEL,
   SPECIAL_COLUMN,
@@ -24,7 +25,7 @@ import {
   cellKey,
   createEmptySpecialBoard,
   expandRemoval,
-  findHint,
+  findPlayableHint,
   findRuns,
   makeBoard,
   planMatches,
@@ -83,6 +84,7 @@ export class Match3Scene extends Phaser.Scene {
   private shufflesLeft = SHUFFLES_PER_LEVEL;
   private timer?: Phaser.Time.TimerEvent;
   private tier: SkinTier = skinTierForLevel(1);
+  private previewImages: string[] = [];
   private boardFrame!: Phaser.GameObjects.Graphics;
   private boardInputZone?: Phaser.GameObjects.Zone;
   private sparkleTimer?: Phaser.Time.TimerEvent;
@@ -99,7 +101,7 @@ export class Match3Scene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("gem-atlas", "/assets/gems/gem-atlas.png");
+    this.load.image("gem-atlas", "/assets/gems/gem-atlas.webp");
   }
 
   create() {
@@ -172,6 +174,10 @@ export class Match3Scene extends Phaser.Scene {
     this.shufflesLeft = SHUFFLES_PER_LEVEL;
     this.tier = skinTierForLevel(level);
     createGemTextures(this, this.tier);
+    // Export once per level, not on every HUD update or countdown tick.
+    this.previewImages = this.tier.key === "classic" ? [] :
+      Array.from({ length: GEM_COLORS }, (_, value) =>
+        this.textures.getBase64(gemTextureKey(this.tier.key, value as GemValue)));
     this.board = makeBoard();
     this.specials = createEmptySpecialBoard();
     this.refillQueue = new GemRefillQueue();
@@ -180,10 +186,10 @@ export class Match3Scene extends Phaser.Scene {
     this.pendingSwap = [];
     this.clearTimer();
     this.renderBoard();
+    this.state = startPlaying ? "playing" : "menu";
     this.updateUi();
 
     if (startPlaying) {
-      this.state = "playing";
       this.startTimer();
       this.startSparkles();
       this.audio.startMusic();
@@ -191,7 +197,6 @@ export class Match3Scene extends Phaser.Scene {
       return;
     }
 
-    this.state = "menu";
   }
 
   private createGemAtlasFrames() {
@@ -288,7 +293,7 @@ export class Match3Scene extends Phaser.Scene {
 
     const halo = this.add.circle(0, 2, GEM_SIZE * 0.45, this.tier.rimLight, 0.07);
     const frame = `gem-${value}`;
-    const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);
+    const useAtlas = this.tier.key === "classic" && this.textures.get(GEM_ATLAS_KEY).has(frame);
     const gem = useAtlas
       ? this.add.image(0, 0, "gem-atlas", frame)
       : this.add.image(0, 0, gemTextureKey(this.tier.key, value));
@@ -296,7 +301,8 @@ export class Match3Scene extends Phaser.Scene {
       const atlasOrigin = GEM_ATLAS_ORIGINS[value] ?? { x: 0.5, y: 0.5 };
       gem.setOrigin(atlasOrigin.x, atlasOrigin.y);
     }
-    gem.setDisplaySize(GEM_TEXTURE_SIZE * 0.78, GEM_TEXTURE_SIZE * 0.78);
+    const displaySize = useAtlas ? GEM_TEXTURE_SIZE * 0.78 : GEM_SIZE + 4;
+    gem.setDisplaySize(displaySize, displaySize);
     container.add([halo, gem]);
     this.addSpecialBadge(container, gem, this.specials[cell.row][cell.col], value);
 
@@ -690,26 +696,8 @@ export class Match3Scene extends Phaser.Scene {
     });
   }
 
-  private findPlayableHint(): [Cell, Cell] | null {
-    for (let row = 0; row < BOARD_ROWS; row += 1) {
-      for (let col = 0; col < BOARD_COLS; col += 1) {
-        if (this.specials[row][col] !== SPECIAL_ULTIMATE) {
-          continue;
-        }
-        const source = { row, col };
-        const neighbors = [
-          { row, col: col + 1 },
-          { row: row + 1, col },
-          { row, col: col - 1 },
-          { row: row - 1, col }
-        ];
-        const target = neighbors.find((cell) => this.isValidCell(cell) && this.board[cell.row][cell.col] !== EMPTY_GEM);
-        if (target) {
-          return [source, target];
-        }
-      }
-    }
-    return findHint(this.board);
+  private findPlayableHint(): Cell[] | null {
+    return findPlayableHint(this.board, this.specials);
   }
 
   private resolveBoard(combo: number) {
@@ -915,6 +903,9 @@ export class Match3Scene extends Phaser.Scene {
     if (!hint) {
       return;
     }
+    // A one-cell hint means tap to detonate, so discard an old swap selection.
+    this.selected = undefined;
+    this.clearSelection();
     hint.forEach((cell) => {
       const gem = this.gems.get(cellKey(cell));
       if (!gem) {
@@ -959,7 +950,7 @@ export class Match3Scene extends Phaser.Scene {
       return;
     }
     this.state = "paused";
-    this.clearTimer();
+    if (this.timer) this.timer.paused = true;
     this.audio.stopMusic();
     this.audio.playSelect();
     this.dispatchOverlay({
@@ -1032,7 +1023,11 @@ export class Match3Scene extends Phaser.Scene {
   }
 
   private startTimer() {
-    this.clearTimer();
+    // Resume the same event so repeated pauses cannot discard partial seconds.
+    if (this.timer) {
+      this.timer.paused = false;
+      return;
+    }
     this.timer = this.time.addEvent({
       delay: 1000,
       loop: true,
@@ -1234,6 +1229,7 @@ export class Match3Scene extends Phaser.Scene {
           timeLeft: this.timeLeft,
           shufflesLeft: this.shufflesLeft,
           tierName: this.tier.name,
+          previewImages: this.previewImages,
           bestScore: this.bestScore,
           bestLevel: this.bestLevel,
           audioEnabled: this.audio.enabled,

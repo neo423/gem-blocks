@@ -153,6 +153,26 @@ export function findHint(board: Board): [Cell, Cell] | null {
   return null;
 }
 
+/** A single cell is a tap-to-detonate hint; two cells are a swap hint. */
+export function findPlayableHint(board: Board, specials: SpecialBoard): Cell[] | null {
+  for (let row = 0; row < BOARD_ROWS; row += 1) {
+    for (let col = 0; col < BOARD_COLS; col += 1) {
+      if (board[row][col] === EMPTY_GEM) continue;
+      const special = specials[row][col];
+      const source = { row, col };
+      if (special === SPECIAL_ROW || special === SPECIAL_COLUMN) return [source];
+      if (special === SPECIAL_ULTIMATE) {
+        const target = [
+          { row, col: col + 1 }, { row: row + 1, col },
+          { row, col: col - 1 }, { row: row - 1, col }
+        ].find((cell) => isInside(cell) && board[cell.row][cell.col] !== EMPTY_GEM);
+        if (target) return [source, target];
+      }
+    }
+  }
+  return findHint(board);
+}
+
 export function planMatches(runs: MatchRun[], swapCellsForCreation: Cell[] = []): MatchPlan {
   const matched = new Set<number>();
   const creations: MatchPlan["creations"] = [];
@@ -350,7 +370,7 @@ export function shuffleBoard(board: Board, specials: SpecialBoard, random: Rando
     }
 
     writePieces(board, specials, shuffled);
-    if (!anyMatch(board) && findHint(board)) {
+    if (!anyMatch(board) && findPlayableHint(board, specials)) {
       return;
     }
   }
