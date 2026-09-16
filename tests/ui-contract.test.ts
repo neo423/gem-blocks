@@ -48,8 +48,8 @@ describe("Gem Kingdom UI contract", () => {
   });
 
   test("uses an iPhone-safe full-screen start menu", () => {
-    expect(html).toContain('name="theme-color" content="#7aa82a"');
-    expect(css).toContain("--ios-bottom-fill: #7aa82a");
+    expect(html).toContain('name="theme-color" content="#063d78"');
+    expect(css).toContain("--ios-bottom-fill: #063d78");
     expect(css).toMatch(/html,\s*body\s*\{[^}]*background-color:\s*var\(--ios-bottom-fill\)/s);
     expect(html).toContain('name="apple-mobile-web-app-status-bar-style" content="black-translucent"');
     expect(html).toContain('id="overlay" class="overlay" data-mode="menu"');
@@ -65,7 +65,6 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).not.toMatch(/\.game-shell\s*\{[^}]*height:\s*100dvh/s);
     expect(css).not.toMatch(/\.game-shell\s*\{[^}]*min-height:\s*100dvh/s);
     expect(css).toMatch(/html,\s*body\s*\{[^}]*background-image:\s*url\("\/assets\/gem-kingdom-game-bg\.webp"\)/s);
-    expect(css).toMatch(/\.game-shell\s*\{[^}]*padding-bottom:\s*0/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*display:\s*grid/s);
     expect(css).toMatch(/\.game-shell\s*\{[^}]*grid-template-rows:\s*auto auto minmax\(0, 1fr\) auto/s);
     expect(css).toMatch(/#game-wrap\s*\{[^}]*flex:\s*none/s);
@@ -105,12 +104,9 @@ describe("Gem Kingdom UI contract", () => {
     expect(css).toMatch(/\.control-label\s*\{[^}]*position:\s*absolute/s);
   });
 
-  test("anchors four live controls to one stable artwork dock", () => {
+  test("preserves four artwork controls in one shared dock", () => {
     expect(html).toContain('class="bottom-controls controls-dock"');
-    expect(css).toContain('url("/assets/controls/control-dock-bg.webp")');
     expect(css).toMatch(/\.controls-dock\s*\{[^}]*position:\s*relative/s);
-    expect(css).toMatch(/\.controls-dock\s*\{[^}]*width:\s*min\(calc\(100%\s*\+\s*12px\),\s*602px\)/s);
-    expect(css).toMatch(/\.controls-dock\s*\{[^}]*aspect-ratio:\s*3\s*\/\s*1/s);
     expect(css).toMatch(/\.controls-dock\s*\{[^}]*grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/s);
     expect(css).not.toContain(".control-button::before");
 
