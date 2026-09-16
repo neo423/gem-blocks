@@ -35,9 +35,9 @@ import {
   ultimateSwapRemoval,
   type GravityPlan
 } from "./logic";
-import { createGemTextures, gemTextureKey, GEM_TEXTURE_SIZE } from "./gemArt";
+import { createGemTextures, gemTextureKey } from "./gemArt";
 import { GemRefillQueue } from "./refillQueue";
-import type { Board, Cell, GemValue, SkinTier, SpecialBoard } from "./types";
+import type { Board, Cell, GemValue, SkinTier, SpecialBoard, OverlayState } from "./types";
 
 type PlayState = "menu" | "playing" | "busy" | "paused" | "over";
 type UiAction = "start" | "restart" | "next" | "pause" | "resume" | "hint" | "shuffle" | "sound";
@@ -55,6 +55,8 @@ const BOARD_X = (WIDTH - BOARD_PIXEL_WIDTH) / 2;
 const BOARD_Y = 41;
 const SAVE_KEY = "gem-blocks-save-v1";
 const GEM_ATLAS_KEY = "gem-atlas";
+// Longest opaque side of each 418px atlas tile; normalize artwork, not its padding.
+const GEM_ATLAS_EXTENTS = [294, 292, 274, 306, 303, 354, 304];
 const GEM_CHARGE_COLORS = [0xff4265, 0xffd64e, 0x39ed9b, 0x4db8ff, 0xd56cff, 0xe9fbff];
 // Compensate for the asymmetric transparent padding inside each 418px atlas cell.
 const GEM_ATLAS_ORIGINS: Readonly<Record<number, { x: number; y: number }>> = {
@@ -79,6 +81,8 @@ export class Match3Scene extends Phaser.Scene {
   private level = 1;
   private totalScore = 0;
   private levelScore = 0;
+  private highestCombo = 0;
+  private bestAtLevelStart = 0;
   private target = targetForLevel(1);
   private timeLeft = BASE_LEVEL_TIME_SECONDS;
   private shufflesLeft = SHUFFLES_PER_LEVEL;
@@ -169,6 +173,8 @@ export class Match3Scene extends Phaser.Scene {
   private resetLevel(level: number, startPlaying: boolean) {
     this.level = level;
     this.levelScore = 0;
+    this.highestCombo = 0;
+    this.bestAtLevelStart = this.bestScore;
     this.target = targetForLevel(level);
     this.timeLeft = Math.max(75, BASE_LEVEL_TIME_SECONDS - Math.floor((level - 1) * 4));
     this.shufflesLeft = SHUFFLES_PER_LEVEL;
@@ -301,7 +307,7 @@ export class Match3Scene extends Phaser.Scene {
       const atlasOrigin = GEM_ATLAS_ORIGINS[value] ?? { x: 0.5, y: 0.5 };
       gem.setOrigin(atlasOrigin.x, atlasOrigin.y);
     }
-    const displaySize = useAtlas ? GEM_TEXTURE_SIZE * 0.78 : GEM_SIZE + 4;
+    const displaySize = useAtlas ? GEM_SIZE * 0.92 * 418 / GEM_ATLAS_EXTENTS[value] : GEM_SIZE + 4;
     gem.setDisplaySize(displaySize, displaySize);
     container.add([halo, gem]);
     this.addSpecialBadge(container, gem, this.specials[cell.row][cell.col], value);
@@ -659,6 +665,7 @@ export class Match3Scene extends Phaser.Scene {
 
     this.levelScore += gained;
     this.totalScore += gained;
+    this.highestCombo = Math.max(this.highestCombo, 1);
     this.updateBest(false);
     this.updateUi({ combo: 1, gained });
     this.animateColorLightning(source, removeSet, targetValue);
@@ -724,8 +731,16 @@ export class Match3Scene extends Phaser.Scene {
     const gained = scoreForRemoval(removeSet.size + plan.creations.length, combo);
     this.levelScore += gained;
     this.totalScore += gained;
+    this.highestCombo = Math.max(this.highestCombo, combo);
     this.updateBest(false);
-    this.updateUi({ combo, gained });
+    const specialNotice = plan.creations.some(({ special }) => special === SPECIAL_ULTIMATE)
+      ? "終極星鑽誕生！交換可清除同色寶石"
+      : plan.creations.some(({ special }) => special === SPECIAL_ROW)
+        ? "橫向閃電誕生！點一下清除整個橫排"
+        : plan.creations.some(({ special }) => special === SPECIAL_COLUMN)
+          ? "直向閃電誕生！點一下清除整個直排"
+          : undefined;
+    this.updateUi({ combo, gained, specialNotice });
 
     plan.creations.forEach((creation) => {
       this.specials[creation.row][creation.col] = creation.special;
@@ -886,6 +901,7 @@ export class Match3Scene extends Phaser.Scene {
     const gained = scoreForRemoval(removeSet.size, 1);
     this.levelScore += gained;
     this.totalScore += gained;
+    this.highestCombo = Math.max(this.highestCombo, 1);
     this.updateBest(false);
     this.updateUi({ combo: 1, gained });
     this.animateRemoval(removeSet, fxPlan, 2, () => {
@@ -987,7 +1003,7 @@ export class Match3Scene extends Phaser.Scene {
       title: "關卡完成",
       text:
         nextTier.key !== this.tier.key
-          ? `下一關解鎖「${nextTier.name}」寶石。`
+          ? `下一關解鎖「${nextTier.name}」。`
           : `目前寶石系列：${this.tier.name}。`,
       big: `總分 ${this.totalScore}`,
       button: `進入第 ${this.level + 1} 關`
@@ -1218,7 +1234,7 @@ export class Match3Scene extends Phaser.Scene {
     });
   }
 
-  private updateUi(extra: { combo?: number; gained?: number } = {}) {
+  private updateUi(extra: { combo?: number; gained?: number; specialNotice?: string } = {}) {
     window.dispatchEvent(
       new CustomEvent("gem-ui", {
         detail: {
@@ -1243,8 +1259,16 @@ export class Match3Scene extends Phaser.Scene {
     );
   }
 
-  private dispatchOverlay(detail: Record<string, string>) {
-    window.dispatchEvent(new CustomEvent("gem-overlay", { detail }));
+  private dispatchOverlay(detail: OverlayState) {
+    const summary = detail.mode === "menu" ? undefined : {
+      levelScore: this.levelScore,
+      totalScore: this.totalScore,
+      highestCombo: this.highestCombo,
+      bestScore: this.bestScore,
+      bestLevel: this.bestLevel,
+      newBest: this.totalScore > this.bestAtLevelStart
+    };
+    window.dispatchEvent(new CustomEvent("gem-overlay", { detail: { ...detail, summary } }));
   }
 
   private hideOverlay() {

@@ -22,39 +22,31 @@
         </div>
 
         <div class="hud-data-panel">
-          <div class="hud-stats-row">
-            <div class="hud-stat-card">
-              <span class="hud-stat-label">關卡</span>
-              <span id="ui-level" class="hud-stat-value">1</span>
-            </div>
-            <div class="hud-stat-card score-stat">
-              <span class="hud-stat-label">分數</span>
-              <span id="ui-score" class="hud-stat-value">0</span>
-            </div>
-            <div class="hud-stat-card">
-              <span class="hud-stat-label">目標</span>
-              <span id="ui-target-value" class="hud-stat-value">1300</span>
-            </div>
+          <div class="hud-stage-row">
+            <strong class="level-badge">第 <span id="ui-level">1</span> 關</strong>
+            <span id="ui-tier">經典切面</span>
           </div>
 
           <div id="progress-panel" class="hud-info-panel" aria-label="關卡進度">
-            <div class="hud-info-row">
-              <span>寶石 <strong id="ui-tier">經典切面</strong></span>
-              <strong id="ui-target">0 / 1300</strong>
+            <span class="hud-goal-label">本關目標</span>
+            <div class="hud-goal-value">
+              <strong id="ui-score">0</strong><span class="goal-separator">／</span><span id="ui-target-value">1300</span>
             </div>
-            <div class="progress-track"><div id="ui-progress"></div></div>
-            <div class="hud-info-row best-row"><span>最佳紀錄</span><span id="ui-best">0 / Lv.1</span></div>
+            <div class="progress-track" role="progressbar" aria-label="本關得分進度" aria-valuemin="0" aria-valuemax="1300" aria-valuenow="0"><div id="ui-progress"></div></div>
           </div>
         </div>
       </section>
 
       <section class="gem-legend" aria-label="下一批寶石">
+        <span class="preview-label">下一批 <span aria-hidden="true">→</span></span>
+        <div class="preview-gems" aria-label="由左至右依序補入">
         <span class="legend-gem" data-preview-slot="0" data-gem="0"></span>
         <span class="legend-gem" data-preview-slot="1" data-gem="1"></span>
         <span class="legend-gem" data-preview-slot="2" data-gem="2"></span>
         <span class="legend-gem" data-preview-slot="3" data-gem="3"></span>
         <span class="legend-gem" data-preview-slot="4" data-gem="4"></span>
         <span class="legend-gem" data-preview-slot="5" data-gem="5"></span>
+        </div>
       </section>
 
       <section id="game-wrap" class="board-frame" aria-label="寶石棋盤">
@@ -75,6 +67,16 @@
           <h1 id="overlay-title">寶石方塊</h1>
           <p id="overlay-text">交換相鄰寶石，湊三連以上消除。</p>
           <div id="overlay-big" class="overlay-big hidden"></div>
+          <section id="overlay-summary" class="round-summary hidden" aria-label="本關統計">
+            <p id="new-record" class="record-badge hidden">新紀錄！</p>
+            <span class="summary-total-label">累計總分</span>
+            <strong id="summary-total" class="summary-total">0</strong>
+            <dl class="summary-stats">
+              <div><dt>本關得分</dt><dd id="summary-level-score">0</dd></div>
+              <div><dt>最高連鎖</dt><dd id="summary-combo">—</dd></div>
+            </dl>
+            <p class="summary-record">最佳紀錄 <span id="ui-best">0 / Lv.1</span></p>
+          </section>
           <div class="menu-actions">
             <button id="overlay-button" type="button">開始遊戲</button>
             <button id="rules-button" type="button">遊戲規則</button>

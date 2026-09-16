@@ -36,3 +36,21 @@ export type SkinTier = {
   sparkle: number;
   rimLight: number;
 };
+
+export type RoundSummary = {
+  levelScore: number;
+  totalScore: number;
+  highestCombo: number;
+  bestScore: number;
+  bestLevel: number;
+  newBest: boolean;
+};
+
+export type OverlayState = {
+  mode: "menu" | "pause" | "level" | "gameover";
+  title: string;
+  text: string;
+  big?: string;
+  button: string;
+  summary?: RoundSummary;
+};
