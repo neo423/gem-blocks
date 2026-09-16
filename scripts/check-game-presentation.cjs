@@ -90,6 +90,17 @@ const output = process.env.PLAYTEST_OUTPUT || 'tmp/game-presentation';
     await page.waitForTimeout(100);
     assert.ok(await page.locator('#combo-toast').evaluate(e => Number(getComputedStyle(e).opacity) > 0.9),
       'Reduced-motion users must still be able to read the notice');
-    console.log('PASS: HUD, preview, pause totals, special notice, goal state, result animation, unlock, restart and reduced motion.');
+    for (const level of [4, 7, 11]) {
+      const artwork = await page.evaluate(level => {
+        const scene = window.__scene;
+        scene.resetLevel(level);
+        return { keys: [...scene.gems.values()].map(gem => gem.list[1].texture.key), preview: scene.previewImages };
+      }, level);
+      assert.equal(artwork.keys.length, 80);
+      assert.ok(artwork.keys.every(key => key === 'gem-atlas'), `Level ${level} must retain detailed gems`);
+      assert.deepEqual(artwork.preview, []);
+      await page.screenshot({ path: path.join(output, `tier-${level}.png`) });
+    }
+    console.log('PASS: HUD, preview, pause totals, special notice, goal state, result animation, unlock, restart, reduced motion and tier artwork.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -180,10 +180,8 @@ export class Match3Scene extends Phaser.Scene {
     this.shufflesLeft = SHUFFLES_PER_LEVEL;
     this.tier = skinTierForLevel(level);
     createGemTextures(this, this.tier);
-    // Export once per level, not on every HUD update or countdown tick.
-    this.previewImages = this.tier.key === "classic" ? [] :
-      Array.from({ length: GEM_COLORS }, (_, value) =>
-        this.textures.getBase64(gemTextureKey(this.tier.key, value as GemValue)));
+    // All tiers share the detailed artwork; an empty list selects its DOM preview.
+    this.previewImages = [];
     this.board = makeBoard();
     this.specials = createEmptySpecialBoard();
     this.refillQueue = new GemRefillQueue();
@@ -299,7 +297,7 @@ export class Match3Scene extends Phaser.Scene {
 
     const halo = this.add.circle(0, 2, GEM_SIZE * 0.45, this.tier.rimLight, 0.07);
     const frame = `gem-${value}`;
-    const useAtlas = this.tier.key === "classic" && this.textures.get(GEM_ATLAS_KEY).has(frame);
+    const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);
     const gem = useAtlas
       ? this.add.image(0, 0, "gem-atlas", frame)
       : this.add.image(0, 0, gemTextureKey(this.tier.key, value));

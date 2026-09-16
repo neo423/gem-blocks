@@ -166,12 +166,12 @@ describe("Gem Kingdom UI contract", () => {
     expect(gemArt).toContain("0xffd45b");
   });
 
-  test("centers selection feedback and keeps the classic atlas for the first series", () => {
+  test("centers selection feedback and keeps the detailed atlas for every series", () => {
     expect(scene).toContain("this.selectionRing = this.add.circle(p.x, p.y");
     expect(scene).toContain("this.tweens.killTweensOf(this.selectionRing)");
     expect(scene).toMatch(/private renderBoard[\s\S]{0,140}this\.clearSelection\(\)/);
     expect(scene).not.toContain("gem.add(ring)");
-    expect(scene).toContain('const useAtlas = this.tier.key === "classic" && this.textures.get(GEM_ATLAS_KEY).has(frame);');
+    expect(scene).toContain('const useAtlas = this.textures.get(GEM_ATLAS_KEY).has(frame);');
   });
 
   test("compensates for uneven transparent padding in every atlas gem", () => {

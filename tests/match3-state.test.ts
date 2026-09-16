@@ -98,8 +98,8 @@ describe("match-3 state transitions", () => {
   });
 
   test.each([
-    [1, "gem-atlas"], [4, "gem-rare-0"], [7, "gem-arcane-0"], [11, "gem-celestial-0"]
-  ])("level %i renders its unlocked artwork", (level, textureKey) => {
+    [1, "gem-atlas"], [4, "gem-atlas"], [7, "gem-atlas"], [11, "gem-atlas"]
+  ])("level %i preserves the detailed gem artwork across tier changes", (level, textureKey) => {
     const scene = makeScene();
     scene.tier = skinTierForLevel(level as number);
     scene.textures.get = () => ({ has: () => true });
